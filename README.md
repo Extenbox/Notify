@@ -1,6 +1,6 @@
-# 📱 Notifak
+# 📱 Notify
 
-پکیج پنل پیامک برای لاراول با پشتیبانی از پنل‌های ایرانی
+پکیج PHP پنل پیامک با پشتیبانی از پنل‌های ایرانی
 
 [![Latest Version](https://img.shields.io/packagist/v/extenbox/notify.svg)](https://packagist.org/packages/extenbox/notify)
 [![Laravel](https://img.shields.io/badge/Laravel-10%20|%2011-red.svg)](https://laravel.com)
@@ -29,14 +29,14 @@ composer require extenbox/notify
 
 ```bash
 # نصب خودکار
-php artisan notifak:install
+php artisan notify:install
 ```
 
 یا به صورت دستی:
 
 ```bash
-php artisan vendor:publish --tag=notifak-config
-php artisan vendor:publish --tag=notifak-migrations
+php artisan vendor:publish --tag=Notify-config
+php artisan vendor:publish --tag=Notify-migrations
 php artisan migrate
 ```
 
@@ -47,9 +47,9 @@ php artisan migrate
 ### روش ۱: فایل `.env`
 
 ```env
-NOTIFAK_DEFAULT_DRIVER=smsir
-NOTIFAK_FALLBACK_DRIVER=ghasedak
-NOTIFAK_CONFIG_SOURCE=config   # config یا database
+Notify_DEFAULT_DRIVER=smsir
+Notify_FALLBACK_DRIVER=ghasedak
+Notify_CONFIG_SOURCE=config   # config یا database
 
 # SMS.ir
 SMSIR_API_KEY=your-api-key
@@ -76,35 +76,35 @@ IPPANEL_SENDER=983000...
 ### روش ۲: از طریق کد (آرایه)
 
 ```php
-use Extenbox\Notify\Facades\Notifak;
+use Extenbox\Notify\Facades\Notify;
 
 // در AppServiceProvider یا هر کنترلر
-Notifak::configureDriver('smsir', [
+Notify::configureDriver('smsir', [
     'api_key' => 'your-api-key',
     'sender'  => '3000xxxx',
 ]);
 
-Notifak::setDefault('smsir');
-Notifak::setFallback('ghasedak');
+Notify::setDefault('smsir');
+Notify::setFallback('ghasedak');
 ```
 
 ### روش ۳: دیتابیس
 
 ```env
-NOTIFAK_CONFIG_SOURCE=database
+Notify_CONFIG_SOURCE=database
 ```
 
 ```php
 // ذخیره تنظیمات در دیتابیس (مثلاً از پنل ادمین)
-Notifak::saveConfigToDatabase('smsir', [
+Notify::saveConfigToDatabase('smsir', [
     'api_key' => 'your-api-key',
     'sender'  => '3000xxxx',
 ]);
 
 // یا از طریق مدل
-use Extenbox\Notify\Models\NotifakProvider;
+use Extenbox\Notify\Models\NotifyProvider;
 
-NotifakProvider::setConfig('ghasedak', [
+NotifyProvider::setConfig('ghasedak', [
     'api_key' => 'your-api-key',
     'sender'  => '5000...',
 ]);
@@ -117,23 +117,23 @@ NotifakProvider::setConfig('ghasedak', [
 ### ارسال ساده (تنظیمات پیش‌فرض)
 
 ```php
-Notifak::send('09123456789', 'سلام! خوش آمدید.');
+Notify::send('09123456789', 'سلام! خوش آمدید.');
 
 // یا با helper function
-notifak('09123456789', 'سلام!');
+notify('09123456789', 'سلام!');
 ```
 
 ### ارسال با تعیین پنل و شماره
 
 ```php
-Notifak::send('09123456789', 'پیام شما')
+Notify::send('09123456789', 'پیام شما')
     ->via('smsir', '3000xxxx');
 ```
 
 ### ارسال با قالب (Pattern)
 
 ```php
-Notifak::send('09123456789', 'کد تأیید: 12345')
+Notify::send('09123456789', 'کد تأیید: 12345')
     ->via('smsir', '3000...')
     ->type('pattern', 'verify-template', [
         'code' => '12345',
@@ -143,7 +143,7 @@ Notifak::send('09123456789', 'کد تأیید: 12345')
 ### ارسال به چند شماره
 
 ```php
-Notifak::send(
+Notify::send(
     ['09123456789', '09987654321'],
     'پیام گروهی'
 )->via('mediana');
@@ -152,7 +152,7 @@ Notifak::send(
 ### دریافت نتیجه
 
 ```php
-$response = Notifak::send('09123456789', 'پیام')->send();
+$response = Notify::send('09123456789', 'پیام')->send();
 
 if ($response->isSuccessful()) {
     echo $response->message;     // پیامک با موفقیت ارسال شد
@@ -169,19 +169,19 @@ if ($response->isSuccessful()) {
 
 ```php
 // app/Notifications/VerifyPhone.php
-use Extenbox\Notify\Channels\NotifakChannel;
-use Extenbox\Notify\Channels\NotifakMessage;
+use Extenbox\Notify\Channels\NotifyChannel;
+use Extenbox\Notify\Channels\NotifyMessage;
 
 class VerifyPhone extends Notification
 {
     public function via($notifiable): array
     {
-        return [NotifakChannel::class];
+        return [NotifyChannel::class];
     }
 
-    public function toNotifak($notifiable): NotifakMessage
+    public function toNotify($notifiable): NotifyMessage
     {
-        return NotifakMessage::create("کد تأیید: {$this->code}")
+        return NotifyMessage::create("کد تأیید: {$this->code}")
             ->via('smsir')
             ->sender('3000...');
     }
@@ -194,9 +194,9 @@ $user->notify(new VerifyPhone($code));
 ### با Pattern:
 
 ```php
-public function toNotifak($notifiable): NotifakMessage
+public function toNotify($notifiable): NotifyMessage
 {
-    return NotifakMessage::create()
+    return NotifyMessage::create()
         ->via('smsir')
         ->pattern('verify-template', ['code' => $this->code]);
 }
@@ -208,13 +208,13 @@ public function toNotifak($notifiable): NotifakMessage
 
 ```php
 // app/Models/User.php
-use Extenbox\Notify\Traits\HasNotifak;
+use Extenbox\Notify\Traits\HasNotify;
 
 class User extends Model
 {
-    use HasNotifak;
+    use HasNotify;
 
-    public function routeNotificationForNotifak(): string
+    public function routeNotificationForNotify(): string
     {
         return $this->mobile;
     }
@@ -231,15 +231,15 @@ $user->sendSms('پیام شما')->via('ghasedak');
 
 ```php
 // routes/web.php
-use Extenbox\Notify\Http\Controllers\NotifakController;
+use Extenbox\Notify\Http\Controllers\NotifyController;
 
 Route::prefix('admin/sms')->middleware('auth')->group(function () {
-    Route::get('/',               [NotifakController::class, 'index']);
-    Route::post('/settings',      [NotifakController::class, 'updateSettings']);
-    Route::post('/defaults',      [NotifakController::class, 'updateDefaults']);
-    Route::post('/test',          [NotifakController::class, 'testSend']);
-    Route::get('/logs',           [NotifakController::class, 'logs']);
-    Route::delete('/logs',        [NotifakController::class, 'clearLogs']);
+    Route::get('/',               [NotifyController::class, 'index']);
+    Route::post('/settings',      [NotifyController::class, 'updateSettings']);
+    Route::post('/defaults',      [NotifyController::class, 'updateDefaults']);
+    Route::post('/test',          [NotifyController::class, 'testSend']);
+    Route::get('/logs',           [NotifyController::class, 'logs']);
+    Route::delete('/logs',        [NotifyController::class, 'clearLogs']);
 });
 ```
 
@@ -249,12 +249,12 @@ Route::prefix('admin/sms')->middleware('auth')->group(function () {
 
 ```bash
 # نصب پکیج
-php artisan notifak:install
+php artisan Notify:install
 
 # ارسال پیامک آزمایشی
-php artisan notifak:test 09123456789
-php artisan notifak:test 09123456789 --driver=ghasedak
-php artisan notifak:test 09123456789 --driver=smsir --sender=3000... --message="پیام تست"
+php artisan Notify:test 09123456789
+php artisan Notify:test 09123456789 --driver=ghasedak
+php artisan Notify:test 09123456789 --driver=smsir --sender=3000... --message="پیام تست"
 ```
 
 ---
@@ -291,10 +291,10 @@ class MyPanelDriver extends BaseDriver
 }
 
 // ثبت در AppServiceProvider::boot()
-Notifak::extend('mypanel', MyPanelDriver::class);
+Notify::extend('mypanel', MyPanelDriver::class);
 
 // استفاده:
-Notifak::send('09...', 'پیام')->via('mypanel');
+Notify::send('09...', 'پیام')->via('mypanel');
 ```
 
 ---
@@ -302,15 +302,15 @@ Notifak::send('09...', 'پیام')->via('mypanel');
 ## مدل لاگ
 
 ```php
-use Extenbox\Notify\Models\NotifakLog;
+use Extenbox\Notify\Models\NotifyLog;
 
 // آمار
-NotifakLog::stats();
+NotifyLog::stats();
 // ['total' => 1234, 'sent' => 1200, 'failed' => 34, 'today' => 56]
 
 // فیلتر
-NotifakLog::sent()->today()->get();
-NotifakLog::failed()->provider('smsir')->get();
+NotifyLog::sent()->today()->get();
+NotifyLog::failed()->provider('smsir')->get();
 ```
 
 ---
