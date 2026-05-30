@@ -3,23 +3,23 @@
 namespace Extenbox\Notify\Tests\Unit;
 
 use Extenbox\Notify\Contracts\SmsResponse;
-use Extenbox\Notify\Facades\Notifak;
-use Extenbox\Notify\NotifakManager;
+use Extenbox\Notify\Facades\Notify;
+use Extenbox\Notify\NotifyManager;
 use Extenbox\Notify\PendingSms;
 use Extenbox\Notify\Tests\TestCase;
 use Extenbox\Notify\Exceptions\DriverNotFoundException;
 
-class NotifakManagerTest extends TestCase
+class NotifyManagerTest extends TestCase
 {
     public function test_send_returns_pending_sms(): void
     {
-        $pending = Notifak::send('09123456789', 'پیام آزمایشی');
+        $pending = Notify::send('09123456789', 'پیام آزمایشی');
         $this->assertInstanceOf(PendingSms::class, $pending);
     }
 
     public function test_pending_sms_via_sets_provider(): void
     {
-        $pending = Notifak::send('09123456789', 'پیام')
+        $pending = Notify::send('09123456789', 'پیام')
             ->via('ghasedak', '5000111122223333');
 
         $this->assertEquals('ghasedak', $pending->getProvider());
@@ -28,7 +28,7 @@ class NotifakManagerTest extends TestCase
 
     public function test_pending_sms_type_sets_pattern(): void
     {
-        $pending = Notifak::send('09123456789', 'کد: 12345')
+        $pending = Notify::send('09123456789', 'کد: 12345')
             ->via('smsir')
             ->type('pattern', 'verify-code', ['code' => '12345']);
 
@@ -39,7 +39,7 @@ class NotifakManagerTest extends TestCase
 
     public function test_phone_normalization(): void
     {
-        $driver    = app('notifak')->driver('smsir');
+        $driver    = app('Notify')->driver('smsir');
         $normalize = new \ReflectionMethod($driver, 'normalizePhone');
         $normalize->setAccessible(true);
 
@@ -50,7 +50,7 @@ class NotifakManagerTest extends TestCase
 
     public function test_configure_driver_merges_config(): void
     {
-        $manager = app('notifak');
+        $manager = app('Notify');
         $manager->configureDriver('smsir', ['sender' => '30009999']);
 
         $driver = $manager->driver('smsir');
@@ -59,7 +59,7 @@ class NotifakManagerTest extends TestCase
 
     public function test_set_default_and_fallback(): void
     {
-        $manager = app('notifak');
+        $manager = app('Notify');
         $manager->setDefault('ghasedak');
         $manager->setFallback('smsir');
 
@@ -70,7 +70,7 @@ class NotifakManagerTest extends TestCase
     public function test_unknown_driver_throws_exception(): void
     {
         $this->expectException(DriverNotFoundException::class);
-        app('notifak')->driver('nonexistent');
+        app('Notify')->driver('nonexistent');
     }
 
     public function test_sms_response_success(): void
@@ -91,8 +91,8 @@ class NotifakManagerTest extends TestCase
 
     public function test_extend_registers_custom_driver(): void
     {
-        $manager = app('notifak');
-        $manager->extend('mypanel', \Notifak\Drivers\SmsIr::class);
+        $manager = app('Notify');
+        $manager->extend('mypanel', \Notify\Drivers\SmsIr::class);
 
         $this->assertContains('mypanel', $manager->getAvailableDrivers());
     }

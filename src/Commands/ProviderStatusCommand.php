@@ -7,17 +7,17 @@ use Illuminate\Support\Facades\DB;
 
 class ProviderStatusCommand extends Command
 {
-    protected $signature = 'notifak:status';
+    protected $signature = 'Notify:status';
 
     protected $description = 'نمایش وضعیت پنل‌های پیامکی تنظیم‌شده';
 
     public function handle(): int
     {
-        $config  = config('notifak');
+        $config  = config('Notify');
         $drivers = ['mediana', 'melipayamak', 'ghasedak', 'smsir', 'ippanel'];
 
         $this->newLine();
-        $this->line('  <fg=cyan;options=bold>📱 Notifak - وضعیت پنل‌های پیامکی</>');
+        $this->line('  <fg=cyan;options=bold>📱 Notify - وضعیت پنل‌های پیامکی</>');
         $this->newLine();
 
         $this->line("  منبع تنظیمات : <fg=yellow>{$config['config_source']}</>");
@@ -50,7 +50,7 @@ class ProviderStatusCommand extends Command
         // آمار لاگ
         if ($config['log']['enabled'] ?? true) {
             try {
-                $table = $config['log']['table'] ?? 'notifak_logs';
+                $table = $config['log']['table'] ?? 'Notify_logs';
                 $total  = DB::table($table)->count();
                 $sent   = DB::table($table)->where('status', 'sent')->count();
                 $failed = DB::table($table)->where('status', 'failed')->count();

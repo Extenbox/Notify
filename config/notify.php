@@ -9,7 +9,7 @@ return [
     | نام پنل پیامکی که به صورت پیش‌فرض استفاده می‌شود
     | مقادیر مجاز: mediana, melipayamak, ghasedak, smsir, ippanel
     */
-    'default' => env('NOTIFAK_DEFAULT_DRIVER', 'smsir'),
+    'default' => env('Notify_DEFAULT_DRIVER', 'smsir'),
 
     /*
     |--------------------------------------------------------------------------
@@ -18,7 +18,7 @@ return [
     | در صورت عدم موفقیت پنل پیش‌فرض، از این پنل استفاده می‌شود
     | null برای غیرفعال کردن
     */
-    'fallback' => env('NOTIFAK_FALLBACK_DRIVER', null),
+    'fallback' => env('Notify_FALLBACK_DRIVER', null),
 
     /*
     |--------------------------------------------------------------------------
@@ -27,7 +27,7 @@ return [
     | config : تنظیمات از همین فایل خوانده می‌شود
     | database : تنظیمات از دیتابیس خوانده می‌شود
     */
-    'config_source' => env('NOTIFAK_CONFIG_SOURCE', 'config'),
+    'config_source' => env('Notify_CONFIG_SOURCE', 'config'),
 
     /*
     |--------------------------------------------------------------------------
@@ -35,7 +35,7 @@ return [
     |--------------------------------------------------------------------------
     | نام جدولی که تنظیمات پنل‌ها در آن ذخیره می‌شود (در صورت استفاده از database)
     */
-    'table' => 'notifak_providers',
+    'table' => 'Notify_providers',
 
     /*
     |--------------------------------------------------------------------------
@@ -83,8 +83,8 @@ return [
     |--------------------------------------------------------------------------
     */
     'log' => [
-        'enabled' => env('NOTIFAK_LOG', true),
-        'table'   => 'notifak_logs',
+        'enabled' => env('Notify_LOG', true),
+        'table'   => 'Notify_logs',
     ],
 
 ];

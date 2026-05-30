@@ -18,9 +18,9 @@ use Illuminate\Database\Eloquent\Builder;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
-class NotifakLog extends Model
+class NotifyLog extends Model
 {
-    protected $table = 'notifak_logs';
+    protected $table = 'Notify_logs';
 
     protected $fillable = [
         'provider',

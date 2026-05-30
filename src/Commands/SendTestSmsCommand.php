@@ -3,17 +3,17 @@
 namespace Extenbox\Notify\Commands;
 
 use Illuminate\Console\Command;
-use Extenbox\Notify\Facades\Notifak;
+use Extenbox\Notify\Facades\Notify;
 
 class SendTestSmsCommand extends Command
 {
-    protected $signature = 'notifak:test
+    protected $signature = 'Notify:test
                             {phone : شماره موبایل گیرنده}
                             {--driver= : نام پنل (پیش‌فرض: تنظیمات config)}
                             {--sender= : شماره ارسال}
-                            {--message=این یک پیامک آزمایشی از Notifak است : متن پیام}';
+                            {--message=این یک پیامک آزمایشی از Notify است : متن پیام}';
 
-    protected $description = 'ارسال پیامک آزمایشی برای تست تنظیمات Notifak';
+    protected $description = 'ارسال پیامک آزمایشی برای تست تنظیمات Notify';
 
     public function handle(): int
     {
@@ -24,7 +24,7 @@ class SendTestSmsCommand extends Command
 
         $this->info("📱 در حال ارسال پیامک آزمایشی به: {$phone}");
 
-        $pending = Notifak::send($phone, $message);
+        $pending = Notify::send($phone, $message);
 
         if ($driver) {
             $pending->via($driver, $sender ?: null);

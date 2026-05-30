@@ -2,7 +2,7 @@
 
 namespace Extenbox\Notify\Exceptions;
 
-class DriverNotFoundException extends NotifakException
+class DriverNotFoundException extends NotifyException
 {
     public static function for(string $name): static
     {

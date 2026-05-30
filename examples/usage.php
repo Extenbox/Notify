@@ -2,24 +2,24 @@
 
 /**
  * ======================================================
- *  Notifak - نمونه‌های کاربردی
+ *  Notify - نمونه‌های کاربردی
  * ======================================================
  */
 
-use Extenbox\Notify\Facades\Notifak;
+use Extenbox\Notify\Facades\Notify;
 
 // ─────────────────────────────────────────────
 // ۱. ارسال ساده (پنل و شماره پیش‌فرض از config)
 // ─────────────────────────────────────────────
 
-Notifak::send('09123456789', 'سلام! خوش آمدید.');
+Notify::send('09123456789', 'سلام! خوش آمدید.');
 
 
 // ─────────────────────────────────────────────
 // ۲. ارسال با تعیین پنل
 // ─────────────────────────────────────────────
 
-Notifak::send('09123456789', 'پیام آزمایشی')
+Notify::send('09123456789', 'پیام آزمایشی')
     ->via('smsir');
 
 
@@ -27,7 +27,7 @@ Notifak::send('09123456789', 'پیام آزمایشی')
 // ۳. ارسال با تعیین پنل و شماره ارسال
 // ─────────────────────────────────────────────
 
-Notifak::send('09123456789', 'پیام آزمایشی')
+Notify::send('09123456789', 'پیام آزمایشی')
     ->via('ghasedak', '5000111122223333');
 
 
@@ -36,14 +36,14 @@ Notifak::send('09123456789', 'پیام آزمایشی')
 // ─────────────────────────────────────────────
 
 // روش ۱: متغیرها را صریح تعریف کنید
-Notifak::send('09123456789', 'code: 12345')
+Notify::send('09123456789', 'code: 12345')
     ->via('smsir', '3000...')
     ->type('pattern', 'verify-template', [
         'code' => '12345',
     ]);
 
 // روش ۲: پیام به صورت "key: value" parse می‌شود
-Notifak::send('09123456789', 'code: 12345, name: علی')
+Notify::send('09123456789', 'code: 12345, name: علی')
     ->via('smsir')
     ->type('pattern', 'welcome-template');
 
@@ -52,7 +52,7 @@ Notifak::send('09123456789', 'code: 12345, name: علی')
 // ۵. ارسال به چند نفر
 // ─────────────────────────────────────────────
 
-Notifak::send(
+Notify::send(
     ['09123456789', '09987654321', '09111111111'],
     'این پیام برای همه ارسال می‌شود'
 )->via('mediana');
@@ -62,7 +62,7 @@ Notifak::send(
 // ۶. دریافت نتیجه ارسال
 // ─────────────────────────────────────────────
 
-$response = Notifak::send('09123456789', 'پیام آزمایشی')
+$response = Notify::send('09123456789', 'پیام آزمایشی')
     ->via('ippanel')
     ->send(); // فراخوانی send() نتیجه را برمی‌گرداند
 
@@ -79,20 +79,20 @@ if ($response->isSuccessful()) {
 // ۷. تنظیم درایور از طریق کد (runtime)
 // ─────────────────────────────────────────────
 
-Notifak::configureDriver('smsir', [
+Notify::configureDriver('smsir', [
     'api_key' => env('MY_SMSIR_KEY'),
     'sender'  => '30007732000001',
 ]);
 
-Notifak::setDefault('smsir');
-Notifak::setFallback('ghasedak');
+Notify::setDefault('smsir');
+Notify::setFallback('ghasedak');
 
 
 // ─────────────────────────────────────────────
 // ۸. ذخیره تنظیمات در دیتابیس (از پنل ادمین)
 // ─────────────────────────────────────────────
 
-Notifak::saveConfigToDatabase('smsir', [
+Notify::saveConfigToDatabase('smsir', [
     'api_key'  => 'your-api-key',
     'sender'   => '30007732000001',
     'base_url' => 'https://api.sms.ir/v1',
@@ -106,9 +106,9 @@ Notifak::saveConfigToDatabase('smsir', [
 /*
 // app/Models/User.php
 class User extends Model {
-    use \Notifak\Traits\HasNotifak;
+    use \Notify\Traits\HasNotify;
 
-    public function routeNotificationForNotifak(): string {
+    public function routeNotificationForNotify(): string {
         return $this->mobile;
     }
 }
@@ -126,22 +126,22 @@ $user->sendSms('خوش آمدید!')->via('ghasedak');
 
 /*
 // app/Sms/MyCustomDriver.php
-class MyCustomDriver extends \Notifak\Drivers\BaseDriver {
+class MyCustomDriver extends \Notify\Drivers\BaseDriver {
     public function getName(): string { return 'mycustom'; }
 
-    public function sendNormal(string|array $to, string $message): \Notifak\Contracts\SmsResponse {
+    public function sendNormal(string|array $to, string $message): \Notify\Contracts\SmsResponse {
         // پیاده‌سازی ارسال
-        return \Notifak\Contracts\SmsResponse::success();
+        return \Notify\Contracts\SmsResponse::success();
     }
 
-    public function sendPattern(string|array $to, string $patternCode, array $variables): \Notifak\Contracts\SmsResponse {
-        return \Notifak\Contracts\SmsResponse::success();
+    public function sendPattern(string|array $to, string $patternCode, array $variables): \Notify\Contracts\SmsResponse {
+        return \Notify\Contracts\SmsResponse::success();
     }
 }
 
 // در AppServiceProvider::boot():
-Notifak::extend('mycustom', MyCustomDriver::class);
+Notify::extend('mycustom', MyCustomDriver::class);
 
 // ارسال:
-Notifak::send('09...', 'پیام')->via('mycustom');
+Notify::send('09...', 'پیام')->via('mycustom');
 */

@@ -4,22 +4,22 @@ namespace Extenbox\Notify;
 
 use Illuminate\Support\ServiceProvider;
 
-class NotifakServiceProvider extends ServiceProvider
+class NotifyServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/notifak.php',
-            'notifak'
+            __DIR__ . '/../config/Notify.php',
+            'Notify'
         );
 
-        $this->app->singleton('notifak', function ($app) {
-            return new NotifakManager(
-                $app['config']->get('notifak', [])
+        $this->app->singleton('Notify', function ($app) {
+            return new NotifyManager(
+                $app['config']->get('Notify', [])
             );
         });
 
-        $this->app->alias('notifak', NotifakManager::class);
+        $this->app->alias('Notify', NotifyManager::class);
 
         // بارگذاری helper functions
         if (file_exists($helpers = __DIR__ . '/helpers.php')) {
@@ -31,13 +31,13 @@ class NotifakServiceProvider extends ServiceProvider
     {
         // انتشار config
         $this->publishes([
-            __DIR__ . '/../config/notifak.php' => config_path('notifak.php'),
-        ], 'notifak-config');
+            __DIR__ . '/../config/Notify.php' => config_path('Notify.php'),
+        ], 'Notify-config');
 
         // انتشار migrations
         $this->publishes([
             __DIR__ . '/../database/migrations/' => database_path('migrations'),
-        ], 'notifak-migrations');
+        ], 'Notify-migrations');
 
         // لود migrations به صورت خودکار
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');

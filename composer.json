@@ -38,10 +38,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Extenbox\\Notify\\NotifakServiceProvider"
+                "Extenbox\\Notify\\NotifyServiceProvider"
             ],
             "aliases": {
-                "Notifak": "Extenbox\\Notify\\Facades\\Notifak"
+                "Notify": "Extenbox\\Notify\\Facades\\Notify"
             }
         }
     },

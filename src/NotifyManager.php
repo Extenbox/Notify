@@ -12,7 +12,7 @@ use Extenbox\Notify\Drivers\MeliPayamak;
 use Extenbox\Notify\Drivers\SmsIr;
 use Extenbox\Notify\Exceptions\DriverNotFoundException;
 
-class NotifakManager
+class NotifyManager
 {
     protected array $drivers = [];
 
@@ -29,9 +29,9 @@ class NotifakManager
     /**
      * شروع یک ارسال زنجیره‌ای
      *
-     * Notifak::send('09...', 'پیام')
-     * Notifak::send('09...', 'پیام')->via('smsir', '3000...')
-     * Notifak::send('09...', 'پیام')->via('smsir')->type('pattern', 'code', ['key'=>'val'])
+     * Notify::send('09...', 'پیام')
+     * Notify::send('09...', 'پیام')->via('smsir', '3000...')
+     * Notify::send('09...', 'پیام')->via('smsir')->type('pattern', 'code', ['key'=>'val'])
      */
     public function send(string|array $to, string $message): PendingSms
     {
@@ -131,7 +131,7 @@ class NotifakManager
 
     protected function getConfigFromDatabase(string $name): array
     {
-        $table = $this->config['table'] ?? 'notifak_providers';
+        $table = $this->config['table'] ?? 'Notify_providers';
 
         try {
             $row = DB::table($table)
@@ -154,7 +154,7 @@ class NotifakManager
     /**
      * تنظیم مستقیم یک درایور از طریق آرایه
      *
-     * Notifak::configureDriver('smsir', [
+     * Notify::configureDriver('smsir', [
      *     'api_key' => 'xxx',
      *     'sender'  => '3000...',
      * ]);
@@ -175,11 +175,11 @@ class NotifakManager
     /**
      * ذخیره تنظیمات در دیتابیس
      *
-     * Notifak::saveConfigToDatabase('smsir', ['api_key' => 'xxx', 'sender' => '3000...']);
+     * Notify::saveConfigToDatabase('smsir', ['api_key' => 'xxx', 'sender' => '3000...']);
      */
     public function saveConfigToDatabase(string $name, array $config): bool
     {
-        $table = $this->config['table'] ?? 'notifak_providers';
+        $table = $this->config['table'] ?? 'Notify_providers';
 
         try {
             DB::table($table)->updateOrInsert(
@@ -232,7 +232,7 @@ class NotifakManager
     /**
      * ثبت درایور سفارشی
      *
-     * Notifak::extend('mypanel', MyPanelDriver::class);
+     * Notify::extend('mypanel', MyPanelDriver::class);
      */
     public function extend(string $name, string $driverClass): static
     {
@@ -273,7 +273,7 @@ class NotifakManager
             return;
         }
 
-        $table = $this->config['log']['table'] ?? 'notifak_logs';
+        $table = $this->config['log']['table'] ?? 'Notify_logs';
 
         try {
             DB::table($table)->insert([

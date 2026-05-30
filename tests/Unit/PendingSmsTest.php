@@ -3,17 +3,17 @@
 namespace Extenbox\Notify\Tests\Unit;
 
 use Extenbox\Notify\PendingSms;
-use Extenbox\Notify\NotifakManager;
+use Extenbox\Notify\NotifyManager;
 use Extenbox\Notify\Tests\TestCase;
 
 class PendingSmsTest extends TestCase
 {
-    private NotifakManager $manager;
+    private NotifyManager $manager;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->manager = $this->app->make('notifak');
+        $this->manager = $this->app->make('Notify');
     }
 
     /** @test */

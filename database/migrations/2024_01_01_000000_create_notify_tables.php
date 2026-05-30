@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('notifak_providers', function (Blueprint $table) {
+        Schema::create('Notify_providers', function (Blueprint $table) {
             $table->id();
             $table->string('driver', 50)->unique()->comment('نام درایور: smsir, mediana, ...');
             $table->json('config')->comment('تنظیمات درایور به صورت JSON');
@@ -16,7 +16,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('notifak_logs', function (Blueprint $table) {
+        Schema::create('Notify_logs', function (Blueprint $table) {
             $table->id();
             $table->string('provider', 50);
             $table->string('to', 500);
@@ -34,7 +34,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('notifak_logs');
-        Schema::dropIfExists('notifak_providers');
+        Schema::dropIfExists('Notify_logs');
+        Schema::dropIfExists('Notify_providers');
     }
 };

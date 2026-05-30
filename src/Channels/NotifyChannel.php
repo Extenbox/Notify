@@ -4,7 +4,7 @@ namespace Extenbox\Notify\Channels;
 
 use Illuminate\Notifications\Notification;
 use Extenbox\Notify\Contracts\SmsResponse;
-use Extenbox\Notify\Facades\Notifak;
+use Extenbox\Notify\Facades\Notify;
 
 /**
  * کانال پیامک برای سیستم Notification لاراول
@@ -13,33 +13,33 @@ use Extenbox\Notify\Facades\Notifak;
  *
  *   public function via($notifiable): array
  *   {
- *       return [NotifakChannel::class];
+ *       return [NotifyChannel::class];
  *   }
  *
- *   public function toNotifak($notifiable): NotifakMessage
+ *   public function toNotify($notifiable): NotifyMessage
  *   {
- *       return (new NotifakMessage)
+ *       return (new NotifyMessage)
  *           ->content('کد تأیید: 12345')
  *           ->via('smsir')
  *           ->sender('30007732...');
  *   }
  */
-class NotifakChannel
+class NotifyChannel
 {
     public function send(mixed $notifiable, Notification $notification): ?SmsResponse
     {
-        if (!method_exists($notification, 'toNotifak')) {
+        if (!method_exists($notification, 'toNotify')) {
             return null;
         }
 
-        $message = $notification->toNotifak($notifiable);
+        $message = $notification->toNotify($notifiable);
 
-        if (!($message instanceof NotifakMessage)) {
+        if (!($message instanceof NotifyMessage)) {
             return null;
         }
 
         $phone = $message->getPhone()
-            ?? $notifiable->routeNotificationFor('notifak')
+            ?? $notifiable->routeNotificationFor('Notify')
             ?? $notifiable->routeNotificationFor('sms')
             ?? $notifiable->phone
             ?? $notifiable->mobile
@@ -49,7 +49,7 @@ class NotifakChannel
             return null;
         }
 
-        $pending = Notifak::send($phone, $message->getContent());
+        $pending = Notify::send($phone, $message->getContent());
 
         if ($message->getProvider()) {
             $pending->via($message->getProvider(), $message->getSender());

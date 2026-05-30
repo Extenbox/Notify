@@ -3,30 +3,30 @@
 namespace Extenbox\Notify\Traits;
 
 use Extenbox\Notify\PendingSms;
-use Extenbox\Notify\Facades\Notifak;
+use Extenbox\Notify\Facades\Notify;
 
 /**
- * Trait HasNotifak
+ * Trait HasNotify
  *
  * این trait را به model کاربران خود اضافه کنید تا بتوانید
  * مستقیماً به آن پیامک بفرستید.
  *
  * استفاده:
  *   class User extends Model {
- *       use HasNotifak;
- *       public function routeNotificationForNotifak(): string { return $this->mobile; }
+ *       use HasNotify;
+ *       public function routeNotificationForNotify(): string { return $this->mobile; }
  *   }
  *
  *   $user->sendSms('کد تأیید: 12345');
  *   $user->sendSms('کد تأیید: 12345')->via('smsir');
  */
-trait HasNotifak
+trait HasNotify
 {
     /**
      * شماره موبایل مدل برای ارسال پیامک
      * این متد را در model خود override کنید
      */
-    public function routeNotificationForNotifak(): string
+    public function routeNotificationForNotify(): string
     {
         return $this->mobile
             ?? $this->phone
@@ -39,14 +39,14 @@ trait HasNotifak
      */
     public function sendSms(string $message): PendingSms
     {
-        $phone = $this->routeNotificationForNotifak();
+        $phone = $this->routeNotificationForNotify();
 
         if (empty($phone)) {
             throw new \RuntimeException(
-                'شماره موبایل تعریف نشده. متد routeNotificationForNotifak را پیاده‌سازی کنید.'
+                'شماره موبایل تعریف نشده. متد routeNotificationForNotify را پیاده‌سازی کنید.'
             );
         }
 
-        return Notifak::send($phone, $message);
+        return Notify::send($phone, $message);
     }
 }

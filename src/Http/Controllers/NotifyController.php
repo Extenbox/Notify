@@ -5,9 +5,9 @@ namespace Extenbox\Notify\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Extenbox\Notify\Facades\Notifak;
-use Extenbox\Notify\Models\NotifakLog;
-use Extenbox\Notify\Models\NotifakProvider;
+use Extenbox\Notify\Facades\Notify;
+use Extenbox\Notify\Models\NotifyLog;
+use Extenbox\Notify\Models\NotifyProvider;
 
 /**
  * کنترلر مدیریت پنل پیامک
@@ -16,11 +16,11 @@ use Extenbox\Notify\Models\NotifakProvider;
  * یا از متدهای آن به صورت مستقیم استفاده کنید.
  *
  * نمونه استفاده در routes/web.php:
- *   Route::post('/admin/sms/settings', [NotifakController::class, 'updateSettings']);
- *   Route::post('/admin/sms/test',     [NotifakController::class, 'testSend']);
- *   Route::get('/admin/sms/logs',      [NotifakController::class, 'logs']);
+ *   Route::post('/admin/sms/settings', [NotifyController::class, 'updateSettings']);
+ *   Route::post('/admin/sms/test',     [NotifyController::class, 'testSend']);
+ *   Route::get('/admin/sms/logs',      [NotifyController::class, 'logs']);
  */
-class NotifakController extends Controller
+class NotifyController extends Controller
 {
     /**
      * دریافت لیست پنل‌های پیامکی و وضعیت آن‌ها
@@ -29,7 +29,7 @@ class NotifakController extends Controller
     {
         $drivers = ['mediana', 'melipayamak', 'ghasedak', 'smsir', 'ippanel'];
 
-        $providers = NotifakProvider::whereIn('driver', $drivers)->get()
+        $providers = NotifyProvider::whereIn('driver', $drivers)->get()
             ->keyBy('driver');
 
         $result = array_map(function ($driver) use ($providers) {
@@ -54,16 +54,16 @@ class NotifakController extends Controller
         return response()->json([
             'success'  => true,
             'drivers'  => array_values($result),
-            'default'  => config('notifak.default'),
-            'fallback' => config('notifak.fallback'),
-            'source'   => config('notifak.config_source'),
+            'default'  => config('Notify.default'),
+            'fallback' => config('Notify.fallback'),
+            'source'   => config('Notify.config_source'),
         ]);
     }
 
     /**
      * به‌روزرسانی تنظیمات یک پنل
      *
-     * POST /notifak/settings
+     * POST /Notify/settings
      * body: { driver, api_key, sender, ... }
      */
     public function updateSettings(Request $request): JsonResponse
@@ -89,16 +89,16 @@ class NotifakController extends Controller
         }
 
         // merge با تنظیمات موجود
-        $existing = NotifakProvider::getConfig($driver);
+        $existing = NotifyProvider::getConfig($driver);
         $config   = array_filter(
             array_merge($existing, $validated),
             fn($v) => $v !== null
         );
 
-        NotifakProvider::setConfig($driver, $config);
+        NotifyProvider::setConfig($driver, $config);
 
         // همچنین در runtime هم اعمال کن
-        Notifak::configureDriver($driver, $config);
+        Notify::configureDriver($driver, $config);
 
         return response()->json([
             'success' => true,
@@ -109,7 +109,7 @@ class NotifakController extends Controller
     /**
      * تنظیم پنل پیش‌فرض و پشتیبان
      *
-     * POST /notifak/settings/defaults
+     * POST /Notify/settings/defaults
      * body: { default, fallback }
      */
     public function updateDefaults(Request $request): JsonResponse
@@ -120,11 +120,11 @@ class NotifakController extends Controller
         ]);
 
         // ذخیره در config runtime
-        Notifak::setDefault($validated['default']);
-        Notifak::setFallback($validated['fallback'] ?? null);
+        Notify::setDefault($validated['default']);
+        Notify::setFallback($validated['fallback'] ?? null);
 
         // اگر می‌خواهید در .env یا db ذخیره کنید، اینجا کد اضافه کنید
-        // مثلا: Setting::set('notifak_default', $validated['default']);
+        // مثلا: Setting::set('Notify_default', $validated['default']);
 
         return response()->json([
             'success' => true,
@@ -137,7 +137,7 @@ class NotifakController extends Controller
     /**
      * ارسال پیامک آزمایشی
      *
-     * POST /notifak/test
+     * POST /Notify/test
      * body: { phone, driver?, sender?, message? }
      */
     public function testSend(Request $request): JsonResponse
@@ -150,9 +150,9 @@ class NotifakController extends Controller
         ]);
 
         $phone   = $validated['phone'];
-        $message = $validated['message'] ?? 'پیامک آزمایشی از Notifak - ' . now()->format('H:i:s');
+        $message = $validated['message'] ?? 'پیامک آزمایشی از Notify - ' . now()->format('H:i:s');
 
-        $pending = Notifak::send($phone, $message);
+        $pending = Notify::send($phone, $message);
 
         if (!empty($validated['driver'])) {
             $pending->via($validated['driver'], $validated['sender'] ?? null);
@@ -170,11 +170,11 @@ class NotifakController extends Controller
     /**
      * مشاهده لاگ ارسال‌ها
      *
-     * GET /notifak/logs
+     * GET /Notify/logs
      */
     public function logs(Request $request): JsonResponse
     {
-        $query = NotifakLog::query()->latest();
+        $query = NotifyLog::query()->latest();
 
         if ($request->filled('provider')) {
             $query->provider($request->provider);
@@ -189,7 +189,7 @@ class NotifakController extends Controller
         }
 
         $logs  = $query->paginate($request->get('per_page', 20));
-        $stats = NotifakLog::stats();
+        $stats = NotifyLog::stats();
 
         return response()->json([
             'success' => true,
@@ -201,13 +201,13 @@ class NotifakController extends Controller
     /**
      * حذف لاگ‌های قدیمی
      *
-     * DELETE /notifak/logs
+     * DELETE /Notify/logs
      * body: { days: 30 }
      */
     public function clearLogs(Request $request): JsonResponse
     {
         $days    = $request->input('days', 30);
-        $deleted = NotifakLog::where('created_at', '<', now()->subDays($days))->delete();
+        $deleted = NotifyLog::where('created_at', '<', now()->subDays($days))->delete();
 
         return response()->json([
             'success' => true,

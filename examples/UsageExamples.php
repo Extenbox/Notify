@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use Extenbox\Notify\Facades\Notifak;
+use Extenbox\Notify\Facades\Notify;
 
 class SmsProviderController extends Controller
 {
@@ -31,8 +31,8 @@ class SmsProviderController extends Controller
 
         return view('admin.sms.settings', [
             'providers'      => $providers,
-            'currentDefault' => config('notifak.default'),
-            'currentFallback'=> config('notifak.fallback'),
+            'currentDefault' => config('Notify.default'),
+            'currentFallback'=> config('Notify.fallback'),
         ]);
     }
 
@@ -55,7 +55,7 @@ class SmsProviderController extends Controller
             'sender'   => $request->sender,
         ]);
 
-        $saved = Notifak::saveConfigToDatabase($driver, $config);
+        $saved = Notify::saveConfigToDatabase($driver, $config);
 
         if ($saved) {
             return back()->with('success', "تنظیمات {$driver} با موفقیت ذخیره شد.");
@@ -75,12 +75,12 @@ class SmsProviderController extends Controller
         ]);
 
         // ذخیره در دیتابیس یا config
-        Notifak::setDefault($request->default);
-        Notifak::setFallback($request->fallback);
+        Notify::setDefault($request->default);
+        Notify::setFallback($request->fallback);
 
         // برای ماندگاری بین requests می‌توانید در یک جدول settings ذخیره کنید:
-        // Setting::set('notifak_default', $request->default);
-        // Setting::set('notifak_fallback', $request->fallback);
+        // Setting::set('Notify_default', $request->default);
+        // Setting::set('Notify_fallback', $request->fallback);
 
         return back()->with('success', 'پنل پیش‌فرض با موفقیت تغییر کرد.');
     }
@@ -96,7 +96,7 @@ class SmsProviderController extends Controller
             'message'  => 'nullable|string|max:500',
         ]);
 
-        $response = Notifak::send(
+        $response = Notify::send(
             $request->phone,
             $request->message ?? 'این یک پیامک آزمایشی است 🎉'
         )->via($request->driver)->send();
@@ -116,13 +116,13 @@ class SmsProviderController extends Controller
 
 namespace App\Services;
 
-use Extenbox\Notify\Facades\Notifak;
+use Extenbox\Notify\Facades\Notify;
 
 class OtpService
 {
     public function send(string $phone, string $code): bool
     {
-        $response = Notifak::send($phone, "code: {$code}")
+        $response = Notify::send($phone, "code: {$code}")
             ->via('smsir')
             ->type('pattern', config('otp.template_id'), [
                 'code' => $code,
@@ -141,8 +141,8 @@ class OtpService
 namespace App\Notifications;
 
 use Illuminate\Notifications\Notification;
-use Extenbox\Notify\Channels\NotifakChannel;
-use Extenbox\Notify\Channels\NotifakMessage;
+use Extenbox\Notify\Channels\NotifyChannel;
+use Extenbox\Notify\Channels\NotifyMessage;
 
 class OrderShipped extends Notification
 {
@@ -150,12 +150,12 @@ class OrderShipped extends Notification
 
     public function via(mixed $notifiable): array
     {
-        return [NotifakChannel::class];
+        return [NotifyChannel::class];
     }
 
-    public function toNotifak(mixed $notifiable): NotifakMessage
+    public function toNotify(mixed $notifiable): NotifyMessage
     {
-        return NotifakMessage::create("سفارش {$this->orderCode} شما ارسال شد")
+        return NotifyMessage::create("سفارش {$this->orderCode} شما ارسال شد")
             ->via('smsir', '30007732...');
     }
 }

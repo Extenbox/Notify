@@ -1,18 +1,18 @@
 <?php
 
-use Extenbox\Notify\NotifakManager;
+use Extenbox\Notify\NotifyManager;
 use Extenbox\Notify\PendingSms;
 
-if (!function_exists('notifak')) {
+if (!function_exists('Notify')) {
     /**
-     * دسترسی سریع به Notifak
+     * دسترسی سریع به Notify
      *
-     * notifak()                        → NotifakManager instance
-     * notifak('09123456789', 'پیام')   → PendingSms (ارسال زنجیره‌ای)
+     * Notify()                        → NotifyManager instance
+     * Notify('09123456789', 'پیام')   → PendingSms (ارسال زنجیره‌ای)
      */
-    function notifak(string|array|null $to = null, string|null $message = null): NotifakManager|PendingSms
+    function Notify(string|array|null $to = null, string|null $message = null): NotifyManager|PendingSms
     {
-        $manager = app('notifak');
+        $manager = app('Notify');
 
         if ($to !== null && $message !== null) {
             return $manager->send($to, $message);

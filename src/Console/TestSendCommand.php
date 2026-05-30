@@ -3,22 +3,22 @@
 namespace Extenbox\Notify\Console;
 
 use Illuminate\Console\Command;
-use Extenbox\Notify\NotifakManager;
+use Extenbox\Notify\NotifyManager;
 
 class TestSendCommand extends Command
 {
-    protected $signature = 'notifak:test
+    protected $signature = 'Notify:test
                             {phone : شماره موبایل گیرنده}
                             {--driver= : نام درایور (پیش‌فرض: مقدار config)}
                             {--sender= : شماره ارسال}
-                            {--message=پیامک آزمایشی از Notifak : متن پیام}';
+                            {--message=پیامک آزمایشی از Notify : متن پیام}';
 
     protected $description = 'ارسال پیامک آزمایشی برای تست تنظیمات';
 
-    public function handle(NotifakManager $notifak): int
+    public function handle(NotifyManager $Notify): int
     {
         $phone   = $this->argument('phone');
-        $driver  = $this->option('driver') ?? $notifak->getDefaultDriver();
+        $driver  = $this->option('driver') ?? $Notify->getDefaultDriver();
         $sender  = $this->option('sender');
         $message = $this->option('message');
 
@@ -33,7 +33,7 @@ class TestSendCommand extends Command
             ]
         );
 
-        $pending = $notifak->send($phone, $message);
+        $pending = $Notify->send($phone, $message);
 
         if ($driver) {
             $pending->via($driver, $sender);

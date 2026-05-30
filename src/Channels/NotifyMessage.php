@@ -2,7 +2,7 @@
 
 namespace Extenbox\Notify\Channels;
 
-class NotifakMessage
+class NotifyMessage
 {
     protected string  $content     = '';
     protected ?string $phone       = null;
