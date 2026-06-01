@@ -1,6 +1,6 @@
 # 📱 Notify
 
-پکیج PHP پنل پیامک با پشتیبانی از پنل‌های ایرانی
+پکیج PHP پنل پیامک با پشتیبانی از انواع پنل‌ها
 
 [![Latest Version](https://img.shields.io/packagist/v/extenbox/notify.svg)](https://packagist.org/packages/extenbox/notify)
 [![Laravel](https://img.shields.io/badge/Laravel-10%20|%2011-red.svg)](https://laravel.com)
