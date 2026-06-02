@@ -332,4 +332,4 @@ $response->toArray()        // array
 
 ## لایسنس
 
- ساخته شده با ❤️ توسط S
+ ساخته شده با ❤️ توسط [ScriptYar](https://github.com/ScriptYar)
