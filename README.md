@@ -3,7 +3,6 @@
 پکیج PHP پنل پیامک با پشتیبانی از انواع پنل‌ها
 
 [![Latest Version](https://img.shields.io/packagist/v/extenbox/notify.svg)](https://packagist.org/packages/extenbox/notify)
-[![Laravel](https://img.shields.io/badge/Laravel-10%20|%2011-red.svg)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.1+-blue.svg)](https://php.net)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -333,4 +332,4 @@ $response->toArray()        // array
 
 ## لایسنس
 
-MIT — ساخته شده با ❤️ برای جامعه Laravel ایران
+ ساخته شده با ❤️ توسط S
