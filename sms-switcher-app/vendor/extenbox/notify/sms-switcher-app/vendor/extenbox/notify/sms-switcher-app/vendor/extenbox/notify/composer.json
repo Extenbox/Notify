@@ -1,0 +1,50 @@
+{
+    "name": "extenbox/notify",
+    "description": "Laravel SMS panel package supporting Iranian providers: Mediana, MeliPayamak, Ghasedak, SMS.ir, IPPanel",
+    "type": "library",
+    "keywords": ["laravel", "sms", "notification", "iran", "mediana", "melipayamak", "ghasedak", "smsir", "ippanel"],
+    "homepage": "https://github.com/extenbox/notify",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Extenbox",
+            "email": "info@extenbox.ir"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^10.0|^11.0",
+        "illuminate/database": "^10.0|^11.0",
+        "illuminate/notifications": "^10.0|^11.0",
+        "guzzlehttp/guzzle": "^7.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0",
+        "phpunit/phpunit": "^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Extenbox\\Notify\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Extenbox\\Notify\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Extenbox\\Notify\\NotifyServiceProvider"
+            ],
+            "aliases": {
+                "Notify": "Extenbox\\Notify\\Facades\\Notify"
+            }
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
