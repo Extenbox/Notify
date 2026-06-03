@@ -11,35 +11,42 @@ use Illuminate\Support\Facades\DB;
 class SmsService
 {
     private const LABELS = [
-        'ghasedak'    => 'قاصدک',
-        'mediana'     => 'مدیانا',
+        'ghasedak' => 'قاصدک',
+        'mediana' => 'مدیانا',
         'melipayamak' => 'ملی پیامک',
-        'smsir'       => 'SMS.ir',
-        'ippanel'     => 'IP Panel',
+        'smsir' => 'SMS.ir',
+        'ippanel' => 'IP Panel',
+        'parsgreen' => 'پارس گرین',
     ];
 
     private const PROVIDER_FIELDS = [
         'ghasedak' => [
             'api_key' => ['label' => 'API Key', 'type' => 'text', 'required' => true],
-            'sender'  => ['label' => 'شماره ارسال', 'type' => 'text', 'required' => false],
+            'sender' => ['label' => 'شماره ارسال', 'type' => 'text', 'required' => false],
         ],
         'mediana' => [
             'api_key' => ['label' => 'API Key', 'type' => 'text', 'required' => true],
-            'sender'  => ['label' => 'شماره ارسال', 'type' => 'text', 'required' => false],
+            'sender' => ['label' => 'شماره ارسال', 'type' => 'text', 'required' => false],
         ],
         'melipayamak' => [
             'username' => ['label' => 'Username', 'type' => 'text', 'required' => true],
             'password' => ['label' => 'Password', 'type' => 'password', 'required' => true],
-            'sender'   => ['label' => 'شماره ارسال', 'type' => 'text', 'required' => false],
+            'sender' => ['label' => 'شماره ارسال', 'type' => 'text', 'required' => false],
         ],
         'smsir' => [
-            'api_key'    => ['label' => 'API Key', 'type' => 'text', 'required' => true],
+            'api_key' => ['label' => 'API Key', 'type' => 'text', 'required' => true],
             'secret_key' => ['label' => 'Secret Key', 'type' => 'text', 'required' => true],
-            'sender'     => ['label' => 'شماره ارسال', 'type' => 'text', 'required' => false],
+            'sender' => ['label' => 'شماره ارسال', 'type' => 'text', 'required' => false],
         ],
         'ippanel' => [
             'api_key' => ['label' => 'API Key', 'type' => 'text', 'required' => true],
-            'sender'  => ['label' => 'شماره ارسال', 'type' => 'text', 'required' => false],
+            'sender' => ['label' => 'شماره ارسال', 'type' => 'text', 'required' => false],
+        ],
+
+        'parsgreen' => [
+            'signature' => ['label' => 'Signature', 'type' => 'text', 'required' => true],
+            'sender' => ['label' => 'شماره ارسال', 'type' => 'text', 'required' => false],
+            'pattern_id' => ['label' => 'Pattern ID', 'type' => 'number', 'required' => false],
         ],
     ];
 
@@ -66,12 +73,12 @@ class SmsService
         foreach (self::LABELS as $driver => $label) {
             $stored = $settings->get($driver);
             $providers[$driver] = [
-                'label'       => $label,
-                'config'      => $stored?->config ?? [],
-                'is_active'   => $stored?->is_active ?? false,
-                'is_default'  => $stored?->is_default ?? false,
+                'label' => $label,
+                'config' => $stored?->config ?? [],
+                'is_active' => $stored?->is_active ?? false,
+                'is_default' => $stored?->is_default ?? false,
                 'is_fallback' => $stored?->is_fallback ?? false,
-                'is_stored'   => !is_null($stored),
+                'is_stored' => !is_null($stored),
             ];
         }
 
@@ -92,10 +99,10 @@ class SmsService
             SmsProviderSetting::updateOrCreate(
                 ['driver' => $driver],
                 [
-                    'label'       => self::LABELS[$driver] ?? $driver,
-                    'config'      => $config,
-                    'is_active'   => $options['is_active'] ?? true,
-                    'is_default'  => $options['is_default'] ?? false,
+                    'label' => self::LABELS[$driver] ?? $driver,
+                    'config' => $config,
+                    'is_active' => $options['is_active'] ?? true,
+                    'is_default' => $options['is_default'] ?? false,
                     'is_fallback' => $options['is_fallback'] ?? false,
                 ]
             );
@@ -163,6 +170,23 @@ class SmsService
         $this->loadSettingsFromDatabase();
 
         return Notify::send($phone, $message)->send();
+    }
+
+    public function getActiveProviders(): array
+    {
+        $settings = SmsProviderSetting::active()
+            ->whereNotNull('config')
+            ->get()
+            ->keyBy('driver');
+
+        $providers = [];
+        foreach ($settings as $driver => $setting) {
+            if (!empty($setting->config) && count(array_filter($setting->config)) > 0) {
+                $providers[$driver] = self::LABELS[$driver] ?? $driver;
+            }
+        }
+
+        return $providers;
     }
 
     private function validatePhone(string $phone): void

@@ -17,10 +17,12 @@ class SmsSwitcherController extends Controller
 
     public function index(): View
     {
+        $activeProviders = $this->smsService->getActiveProviders();
+
         return view('sms.index', [
             'providers'       => $this->smsService->getProviders(),
+            'activeProviders' => $activeProviders,
             'currentProvider' => $this->smsService->getDefaultProvider(),
-            'providerFields'  => $this->smsService->getAllProviderFields(),
         ]);
     }
 
