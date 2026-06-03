@@ -6,7 +6,8 @@ use Illuminate\Console\Command;
 
 class InstallCommand extends Command
 {
-    protected $signature   = 'Notify:install';
+    protected $signature   = 'notify:install';
+    protected $aliases     = ['Notify:install'];
     protected $description = 'نصب و راه‌اندازی پکیج Notify';
 
     public function handle(): int
@@ -53,7 +54,7 @@ class InstallCommand extends Command
         $this->line('     SMSIR_SENDER=3000xxxxxx');
         $this->line('');
         $this->line('  ۲. ارسال پیامک آزمایشی:');
-        $this->line('     php artisan Notify:test 09123456789');
+        $this->line('     php artisan notify:test 09123456789');
         $this->line('');
         $this->line('  ۳. مستندات کامل: https://github.com/extenbox/notify');
         $this->line('');

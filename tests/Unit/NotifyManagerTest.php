@@ -92,7 +92,7 @@ class NotifyManagerTest extends TestCase
     public function test_extend_registers_custom_driver(): void
     {
         $manager = app('Notify');
-        $manager->extend('mypanel', \Notify\Drivers\SmsIr::class);
+        $manager->extend('mypanel', \Extenbox\Notify\Drivers\SmsIr::class);
 
         $this->assertContains('mypanel', $manager->getAvailableDrivers());
     }

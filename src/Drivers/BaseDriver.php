@@ -49,14 +49,13 @@ abstract class BaseDriver implements SmsDriver
         if (isset($config['sender'])) {
             $this->sender = $config['sender'];
         }
-        // Rebuild client if base_url changed
-        if (isset($config['base_url'])) {
-            $this->client = new Client([
-                'base_uri' => $config['base_url'],
-                'timeout'  => 30,
-                'headers'  => $this->defaultHeaders(),
-            ]);
-        }
+
+        $this->client = new Client([
+            'base_uri' => $this->config['base_url'] ?? '',
+            'timeout'  => 30,
+            'headers'  => $this->defaultHeaders(),
+        ]);
+
         return $this;
     }
 

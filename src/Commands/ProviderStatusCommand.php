@@ -7,7 +7,9 @@ use Illuminate\Support\Facades\DB;
 
 class ProviderStatusCommand extends Command
 {
-    protected $signature = 'Notify:status';
+    protected $signature = 'notify:status';
+
+    protected $aliases = ['Notify:status'];
 
     protected $description = 'نمایش وضعیت پنل‌های پیامکی تنظیم‌شده';
 

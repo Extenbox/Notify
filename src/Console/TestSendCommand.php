@@ -7,11 +7,13 @@ use Extenbox\Notify\NotifyManager;
 
 class TestSendCommand extends Command
 {
-    protected $signature = 'Notify:test
+    protected $signature = 'notify:test
                             {phone : شماره موبایل گیرنده}
                             {--driver= : نام درایور (پیش‌فرض: مقدار config)}
                             {--sender= : شماره ارسال}
                             {--message=پیامک آزمایشی از Notify : متن پیام}';
+
+    protected $aliases = ['Notify:test'];
 
     protected $description = 'ارسال پیامک آزمایشی برای تست تنظیمات';
 

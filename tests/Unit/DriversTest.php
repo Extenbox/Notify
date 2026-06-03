@@ -7,9 +7,9 @@ use Extenbox\Notify\Tests\TestCase;
 
 class DriversTest extends TestCase
 {
-    private function makeDriver(array $config = []): SmsIrDriver
+    private function makeDriver(array $config = []): SmsIr
     {
-        return new SmsIrDriver(array_merge([
+        return new SmsIr(array_merge([
             'api_key'  => 'test-key',
             'sender'   => '30007732000000',
             'base_url' => 'https://api.sms.ir/v1',

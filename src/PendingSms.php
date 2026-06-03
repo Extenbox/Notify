@@ -57,8 +57,8 @@ class PendingSms
     }
 
     /**
-     * ارسال فوری (در صورتی که کاربر فراخوانی زنجیره‌ای نداشت)
-     * این متد توسط __destruct صدا زده می‌شود
+     * ارسال فوری
+     * اگر auto_send روشن باشد، __destruct همین متد را برای استفاده ساده README صدا می‌زند.
      */
     private bool $sent = false;
 
@@ -70,7 +70,7 @@ class PendingSms
 
     public function __destruct()
     {
-        if (!$this->sent) {
+        if (!$this->sent && $this->manager->shouldAutoSend()) {
             $this->send();
         }
     }

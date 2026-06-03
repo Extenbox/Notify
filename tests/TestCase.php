@@ -15,7 +15,7 @@ abstract class TestCase extends Orchestra
     protected function getPackageAliases($app): array
     {
         return [
-            'Notify' => \Notify\Facades\Notify::class,
+            'Notify' => \Extenbox\Notify\Facades\Notify::class,
         ];
     }
 
@@ -24,6 +24,7 @@ abstract class TestCase extends Orchestra
         $app['config']->set('Notify.default', 'smsir');
         $app['config']->set('Notify.fallback', null);
         $app['config']->set('Notify.config_source', 'config');
+        $app['config']->set('Notify.auto_send', false);
         $app['config']->set('Notify.log.enabled', false);
 
         $app['config']->set('Notify.drivers.smsir', [

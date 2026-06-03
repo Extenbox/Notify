@@ -211,6 +211,11 @@ class NotifyManager
         return $this->config['fallback'] ?? null;
     }
 
+    public function shouldAutoSend(): bool
+    {
+        return (bool) ($this->config['auto_send'] ?? true);
+    }
+
     /**
      * تنظیم پنل پیش‌فرض در runtime
      */

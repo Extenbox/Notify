@@ -7,7 +7,7 @@ use Extenbox\Notify\Facades\Notify;
 
 class SendTestSmsCommand extends Command
 {
-    protected $signature = 'Notify:test
+    protected $signature = 'notify:send-test
                             {phone : شماره موبایل گیرنده}
                             {--driver= : نام پنل (پیش‌فرض: تنظیمات config)}
                             {--sender= : شماره ارسال}

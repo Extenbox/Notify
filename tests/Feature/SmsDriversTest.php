@@ -8,18 +8,17 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use Extenbox\Notify\Contracts\SmsResponse;
 use Extenbox\Notify\Drivers\SmsIr;
-use Extenbox\Notify\Drivers\Ghasedak;
 use Extenbox\Notify\Tests\TestCase;
 
 class SmsDriversTest extends TestCase
 {
-    private function mockSmsIrDriver(array $responses): SmsIrDriver
+    private function mockSmsIrDriver(array $responses): SmsIr
     {
         $mock    = new MockHandler($responses);
         $handler = HandlerStack::create($mock);
         $client  = new Client(['handler' => $handler]);
 
-        $driver = new SmsIrDriver([
+        $driver = new SmsIr([
             'api_key'  => 'test-key',
             'sender'   => '30007732000000',
             'base_url' => 'https://api.sms.ir/v1',

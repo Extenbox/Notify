@@ -9,7 +9,7 @@ class NotifyServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/Notify.php',
+            __DIR__ . '/../config/notify.php',
             'Notify'
         );
 
@@ -31,7 +31,7 @@ class NotifyServiceProvider extends ServiceProvider
     {
         // انتشار config
         $this->publishes([
-            __DIR__ . '/../config/Notify.php' => config_path('Notify.php'),
+            __DIR__ . '/../config/notify.php' => config_path('Notify.php'),
         ], 'Notify-config');
 
         // انتشار migrations
@@ -47,6 +47,7 @@ class NotifyServiceProvider extends ServiceProvider
             $this->commands([
                 Console\InstallCommand::class,
                 Console\TestSendCommand::class,
+                Commands\ProviderStatusCommand::class,
             ]);
         }
     }
