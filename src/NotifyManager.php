@@ -10,6 +10,7 @@ use Extenbox\Notify\Drivers\IpPanel;
 use Extenbox\Notify\Drivers\Mediana;
 use Extenbox\Notify\Drivers\MeliPayamak;
 use Extenbox\Notify\Drivers\SmsIr;
+use Extenbox\Notify\Drivers\ParsGreen;
 use Extenbox\Notify\Exceptions\DriverNotFoundException;
 
 class NotifyManager
@@ -22,6 +23,7 @@ class NotifyManager
         'ghasedak'    => Ghasedak::class,
         'smsir'       => SmsIr::class,
         'ippanel'     => IpPanel::class,
+        'parsgreen'   => ParsGreen::class,
     ];
 
     public function __construct(protected array $config = []) {}
