@@ -1,8 +1,8 @@
 {
     "name": "extenbox/notify",
-    "description": "Laravel SMS panel package supporting Iranian providers: Mediana, MeliPayamak, Ghasedak, SMS.ir, IPPanel",
+    "description": "Framework-agnostic PHP SMS panel package with optional Laravel integration",
     "type": "library",
-    "keywords": ["laravel", "sms", "notification", "iran", "mediana", "melipayamak", "ghasedak", "smsir", "ippanel"],
+    "keywords": ["php", "laravel", "codeigniter", "sms", "notification", "iran", "mediana", "melipayamak", "ghasedak", "smsir", "ippanel"],
     "homepage": "https://github.com/extenbox/notify",
     "license": "MIT",
     "authors": [
@@ -13,10 +13,12 @@
     ],
     "require": {
         "php": "^8.1",
-        "illuminate/support": "^10.0|^11.0",
-        "illuminate/database": "^10.0|^11.0",
-        "illuminate/notifications": "^10.0|^11.0",
         "guzzlehttp/guzzle": "^7.0"
+    },
+    "suggest": {
+        "illuminate/support": "Required only for Laravel service provider, facade, and artisan commands.",
+        "illuminate/database": "Required only for Laravel/Eloquent database-backed provider config and logs.",
+        "illuminate/notifications": "Required only for the Laravel notification channel."
     },
     "require-dev": {
         "orchestra/testbench": "^8.0|^9.0",
