@@ -4,6 +4,7 @@ namespace Extenbox\Notify\Drivers;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
 use Extenbox\Notify\Contracts\SmsDriver;
 use Extenbox\Notify\Contracts\SmsResponse;
 
@@ -17,11 +18,7 @@ abstract class BaseDriver implements SmsDriver
     {
         $this->config = $config;
         $this->sender = $config['sender'] ?? '';
-        $this->client = new Client([
-            'base_uri' => $this->config['base_url'] ?? '',
-            'timeout'  => 30,
-            'headers'  => $this->defaultHeaders(),
-        ]);
+        $this->client = $this->makeClient();
     }
 
     protected function defaultHeaders(): array
@@ -50,13 +47,52 @@ abstract class BaseDriver implements SmsDriver
             $this->sender = $config['sender'];
         }
 
-        $this->client = new Client([
-            'base_uri' => $this->config['base_url'] ?? '',
-            'timeout'  => 30,
-            'headers'  => $this->defaultHeaders(),
-        ]);
+        $this->client = $this->makeClient();
 
         return $this;
+    }
+
+    protected function makeClient(): Client
+    {
+        return new Client([
+            'base_uri' => $this->normalizeBaseUri($this->config['base_url'] ?? ''),
+            'timeout'  => $this->config['timeout'] ?? 30,
+            'headers'  => $this->defaultHeaders(),
+            'verify'   => $this->sslVerify(),
+        ]);
+    }
+
+    protected function normalizeBaseUri(string $baseUrl): string
+    {
+        if ($baseUrl === '') {
+            return '';
+        }
+
+        return rtrim($baseUrl, '/') . '/';
+    }
+
+    protected function normalizeUri(string $uri): string
+    {
+        return ltrim($uri, '/');
+    }
+
+    protected function sslVerify(): bool|string
+    {
+        $value = $this->config['ssl_verify']
+            ?? $this->config['sslverify']
+            ?? true;
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        $normalized = strtolower(trim((string) $value));
+
+        return match ($normalized) {
+            'false', '0', 'no', 'off' => false,
+            'true', '1', 'yes', 'on' => true,
+            default => $value,
+        };
     }
 
     /**
@@ -86,17 +122,12 @@ abstract class BaseDriver implements SmsDriver
      */
     protected function post(string $uri, array $data = [], array $headers = []): array
     {
-        try {
-            $options = ['json' => $data];
-            if (!empty($headers)) {
-                $options['headers'] = $headers;
-            }
-
-            $response = $this->client->post($uri, $options);
-            return json_decode($response->getBody()->getContents(), true) ?? [];
-        } catch (GuzzleException $e) {
-            return ['error' => $e->getMessage(), 'code' => $e->getCode()];
+        $options = ['json' => $data];
+        if (!empty($headers)) {
+            $options['headers'] = $headers;
         }
+
+        return $this->request('POST', $uri, $options);
     }
 
     /**
@@ -104,14 +135,71 @@ abstract class BaseDriver implements SmsDriver
      */
     protected function get(string $uri, array $query = [], array $headers = []): array
     {
-        try {
-            $options = ['query' => $query];
-            if (!empty($headers)) {
-                $options['headers'] = $headers;
-            }
+        $options = ['query' => $query];
+        if (!empty($headers)) {
+            $options['headers'] = $headers;
+        }
 
-            $response = $this->client->get($uri, $options);
-            return json_decode($response->getBody()->getContents(), true) ?? [];
+        return $this->request('GET', $uri, $options);
+    }
+
+    protected function delete(string $uri, array $data = [], array $headers = []): array
+    {
+        $options = ['json' => $data];
+        if (!empty($headers)) {
+            $options['headers'] = $headers;
+        }
+
+        return $this->request('DELETE', $uri, $options);
+    }
+
+    protected function postForm(string $uri, array $data = [], array $headers = []): array
+    {
+        $options = ['form_params' => $data];
+        if (!empty($headers)) {
+            $options['headers'] = $headers;
+        }
+
+        return $this->request('POST', $uri, $options);
+    }
+
+    public function rawGet(string $uri, array $query = [], array $headers = []): array
+    {
+        return $this->get($uri, $query, $headers);
+    }
+
+    public function rawPost(string $uri, array $data = [], array $headers = []): array
+    {
+        return $this->post($uri, $data, $headers);
+    }
+
+    public function rawPostForm(string $uri, array $data = [], array $headers = []): array
+    {
+        return $this->postForm($uri, $data, $headers);
+    }
+
+    public function rawDelete(string $uri, array $data = [], array $headers = []): array
+    {
+        return $this->delete($uri, $data, $headers);
+    }
+
+    protected function request(string $method, string $uri, array $options = []): array
+    {
+        try {
+            $response = $this->client->request($method, $this->normalizeUri($uri), $options);
+            $body = $response->getBody()->getContents();
+            $decoded = json_decode($body, true);
+
+            return is_array($decoded) ? $decoded : ['raw' => $body];
+        } catch (RequestException $e) {
+            $body = $e->getResponse()?->getBody()->getContents();
+            $decoded = $body ? json_decode($body, true) : null;
+
+            return [
+                'error' => $decoded['meta']['message'] ?? $decoded['message'] ?? $e->getMessage(),
+                'code' => $e->getCode(),
+                'response' => is_array($decoded) ? $decoded : $body,
+            ];
         } catch (GuzzleException $e) {
             return ['error' => $e->getMessage(), 'code' => $e->getCode()];
         }

@@ -26,18 +26,7 @@ class SmsIr extends BaseDriver
 
     public function sendNormal(string|array $to, string $message): SmsResponse
     {
-        $phones = $this->normalizePhones($to);
-
-        $messages = array_map(fn($phone) => [
-            'mobile'  => $phone,
-            'message' => $message,
-        ], $phones);
-
-        $response = $this->post('/send/bulk', [
-            'lineNumber' => $this->getSender(),
-            'messages'   => $messages,
-            'sendDateTime' => null,
-        ]);
+        $response = $this->sendBulk($message, $this->normalizePhones($to));
 
         if (isset($response['error'])) {
             return SmsResponse::failure($response['error']);
@@ -58,16 +47,7 @@ class SmsIr extends BaseDriver
     {
         $phones = $this->normalizePhones($to);
 
-        $params = [];
-        foreach ($variables as $key => $value) {
-            $params[] = ['name' => $key, 'value' => (string) $value];
-        }
-
-        $response = $this->post('/send/verify', [
-            'mobile'       => $phones[0],
-            'templateId'   => (int) $patternCode,
-            'parameters'   => $params,
-        ]);
+        $response = $this->sendVerify($phones[0], (int) $patternCode, $variables);
 
         if (isset($response['error'])) {
             return SmsResponse::failure($response['error']);
@@ -82,5 +62,64 @@ class SmsIr extends BaseDriver
             $response['status'] ?? null,
             $response
         );
+    }
+
+    public function sendBulk(string $message, array $mobiles, ?int $sendAt = null, ?string $lineNumber = null): array
+    {
+        return $this->post('send/bulk', [
+            'lineNumber'   => $lineNumber ?? $this->getSender(),
+            'messageText'  => $message,
+            'mobiles'      => $mobiles,
+            'sendDateTime' => $sendAt,
+        ]);
+    }
+
+    public function sendLikeToLike(array $messages, array $mobiles, ?int $sendAt = null, ?string $lineNumber = null): array
+    {
+        return $this->post('send/likeToLike', [
+            'lineNumber'    => $lineNumber ?? $this->getSender(),
+            'messageTexts'  => $messages,
+            'mobiles'       => $mobiles,
+            'sendDateTime'  => $sendAt,
+        ]);
+    }
+
+    public function sendVerify(string $mobile, int $templateId, array $parameters): array
+    {
+        $params = [];
+        foreach ($parameters as $key => $value) {
+            $params[] = ['name' => (string) $key, 'value' => (string) $value];
+        }
+
+        return $this->post('send/verify', [
+            'mobile'     => $mobile,
+            'templateId' => $templateId,
+            'parameters' => $params,
+        ]);
+    }
+
+    public function deleteScheduled(string|int $packId): array
+    {
+        return $this->delete('send/scheduled/' . $packId);
+    }
+
+    public function getCredit(): array
+    {
+        return $this->get('credit');
+    }
+
+    public function getLineNumbers(): array
+    {
+        return $this->get('line');
+    }
+
+    public function getSentReport(array $filters = []): array
+    {
+        return $this->get('report/sent', $filters);
+    }
+
+    public function getReceivedReport(array $filters = []): array
+    {
+        return $this->get('report/received', $filters);
     }
 }

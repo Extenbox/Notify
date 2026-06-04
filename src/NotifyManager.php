@@ -129,10 +129,25 @@ class NotifyManager
         $source = $this->config['config_source'] ?? 'config';
 
         if ($source === 'database') {
-            return $this->getConfigFromDatabase($name);
+            return $this->withSharedDriverOptions($this->getConfigFromDatabase($name));
         }
 
-        return $this->config['drivers'][$name] ?? [];
+        return $this->withSharedDriverOptions($this->config['drivers'][$name] ?? []);
+    }
+
+    protected function withSharedDriverOptions(array $driverConfig): array
+    {
+        if (!array_key_exists('ssl_verify', $driverConfig) && !array_key_exists('sslverify', $driverConfig)) {
+            $driverConfig['ssl_verify'] = $this->config['ssl_verify'] ?? true;
+        }
+
+        if (array_key_exists('ssl_verify', $driverConfig) && $driverConfig['ssl_verify'] === null) {
+            $driverConfig['ssl_verify'] = $this->config['ssl_verify'] ?? true;
+        } elseif (array_key_exists('sslverify', $driverConfig) && $driverConfig['sslverify'] === null) {
+            $driverConfig['sslverify'] = $this->config['ssl_verify'] ?? true;
+        }
+
+        return $driverConfig;
     }
 
     protected function getConfigFromDatabase(string $name): array

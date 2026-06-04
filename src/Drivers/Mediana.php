@@ -20,20 +20,13 @@ class Mediana extends BaseDriver
         return [
             'Accept'       => 'application/json',
             'Content-Type' => 'application/json',
-            'ApiKey'       => $this->config['api_key'] ?? '',
+            'X-API-KEY'    => $this->config['api_key'] ?? '',
         ];
     }
 
     public function sendNormal(string|array $to, string $message): SmsResponse
     {
-        $phones = $this->normalizePhones($to);
-
-        $response = $this->post('/Message', [
-            'Content'    => $message,
-            'MobileList' => $phones,
-            'SendDate'   => null,
-            'SenderList' => [$this->getSender()],
-        ]);
+        $response = $this->sendSms($this->normalizePhones($to), $message, $this->getSender());
 
         if (isset($response['error'])) {
             return SmsResponse::failure($response['error']);
@@ -54,17 +47,7 @@ class Mediana extends BaseDriver
     {
         $phones = $this->normalizePhones($to);
 
-        $params = [];
-        foreach ($variables as $key => $value) {
-            $params[] = ['Parameter' => $key, 'ParameterValue' => (string) $value];
-        }
-
-        $response = $this->post('/Message/Pattern', [
-            'PatternCode'  => $patternCode,
-            'SenderNumber' => $this->getSender(),
-            'Mobile'       => $phones[0], // مدیانا یک شماره در pattern
-            'Parameters'   => $params,
-        ]);
+        $response = $this->sendPatternSms($phones, $patternCode, $variables, $this->getSender());
 
         if (isset($response['error'])) {
             return SmsResponse::failure($response['error']);
@@ -79,5 +62,81 @@ class Mediana extends BaseDriver
             $response['StatusCode'] ?? null,
             $response
         );
+    }
+
+    public function sendSms(array $recipients, string $message, ?string $sendingNumber = null, ?string $type = null): array
+    {
+        $payload = [
+            'recipients' => $recipients,
+            'messageText' => $message,
+        ];
+
+        if ($sendingNumber) {
+            $payload['sendingNumber'] = $sendingNumber;
+        } elseif ($type) {
+            $payload['type'] = $type;
+        }
+
+        return $this->post('sms/v1/send/sms', $payload);
+    }
+
+    public function sendPatternSms(array $recipients, string $patternCode, array $parameters, ?string $sendingNumber = null, ?string $type = null): array
+    {
+        $payload = [
+            'recipients' => $recipients,
+            'patternCode' => $patternCode,
+            'parameters' => $parameters,
+        ];
+
+        if ($sendingNumber) {
+            $payload['sendingNumber'] = $sendingNumber;
+        } elseif ($type) {
+            $payload['type'] = $type;
+        }
+
+        return $this->post('sms/v1/send/pattern', $payload);
+    }
+
+    public function sendOtp(string $recipient, string $patternCode, string $otpCode): array
+    {
+        return $this->post('sms/v1/send/otp', compact('patternCode', 'recipient', 'otpCode'));
+    }
+
+    public function sendArray(array $requests, ?string $type = null): array
+    {
+        return $this->post('sms/v1/send/array', [
+            'Requests' => $requests,
+            'Type' => $type,
+        ]);
+    }
+
+    public function getBalance(): array
+    {
+        return $this->get('sms/v1/account/balance');
+    }
+
+    public function getLines(): array
+    {
+        return $this->get('sms/v1/account/lines');
+    }
+
+    public function getStatuses(array $messageCodes): array
+    {
+        return $this->get('sms/v1/status', ['messageCodes' => $messageCodes]);
+    }
+
+    public function getInbox(array $filters = []): array
+    {
+        return $this->get('sms/v1/send-requests/inbox', $filters);
+    }
+
+    public function getPattern(string $patternCode): array
+    {
+        return $this->get('sms/v1/get/pattern/' . rawurlencode($patternCode));
+    }
+
+    public function getPatternByTitle(string $patternTitle): array
+    {
+        return $this->get('sms/v1/get/pattern-title/' . rawurlencode($patternTitle));
     }
 }
