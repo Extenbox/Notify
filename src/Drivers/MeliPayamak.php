@@ -27,11 +27,7 @@ class MeliPayamak extends BaseDriver
     {
         $phones = $this->normalizePhones($to);
 
-        $response = $this->post('/Send', array_merge($this->getAuthParams(), [
-            'from' => $this->getSender(),
-            'to'   => $phones,
-            'text' => $message,
-        ]));
+        $response = $this->send($phones, $this->getSender(), $message);
 
         if (isset($response['error'])) {
             return SmsResponse::failure($response['error']);
@@ -57,11 +53,7 @@ class MeliPayamak extends BaseDriver
         // ملی پیامک از فرمت خاصی برای متغیرها استفاده می‌کند
         $text = $variables['text'] ?? implode(' ', $variables);
 
-        $response = $this->post('/BaseService.svc/Rest/SendByBaseNumber2', array_merge($this->getAuthParams(), [
-            'text'   => $text,
-            'to'     => $phones[0],
-            'bodyId' => (int) $patternCode,
-        ]));
+        $response = $this->sendByBaseNumber($text, $phones[0], (int) $patternCode);
 
         if (isset($response['error'])) {
             return SmsResponse::failure($response['error']);
@@ -92,5 +84,49 @@ class MeliPayamak extends BaseDriver
             -8  => 'خط ارسال غیرفعال است',
             default => "خطای ناشناخته: $code",
         };
+    }
+
+    public function send(array|string $to, string $from, string $text, bool $isFlash = false): array
+    {
+        return $this->post('Send', array_merge($this->getAuthParams(), [
+            'from' => $from,
+            'to' => is_array($to) ? $to : [$to],
+            'text' => $text,
+            'isFlash' => $isFlash,
+        ]));
+    }
+
+    public function sendByBaseNumber(string $text, string $to, int $bodyId): array
+    {
+        return $this->post('BaseService.svc/Rest/SendByBaseNumber2', array_merge($this->getAuthParams(), [
+            'text' => $text,
+            'to' => $to,
+            'bodyId' => $bodyId,
+        ]));
+    }
+
+    public function getCredit(): array
+    {
+        return $this->post('GetCredit', $this->getAuthParams());
+    }
+
+    public function getBasePrice(): array
+    {
+        return $this->post('GetBasePrice', $this->getAuthParams());
+    }
+
+    public function getNumbers(): array
+    {
+        return $this->post('GetNumbers', $this->getAuthParams());
+    }
+
+    public function getMessages(int|string $location, int $index, int $count, string $from = ''): array
+    {
+        return $this->post('GetMessages', array_merge($this->getAuthParams(), compact('location', 'index', 'count', 'from')));
+    }
+
+    public function isDelivered(int|string $recId): array
+    {
+        return $this->post('GetDeliveries2', array_merge($this->getAuthParams(), ['recId' => $recId]));
     }
 }

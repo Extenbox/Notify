@@ -96,7 +96,7 @@ class SmsProviderController extends Controller
             'message'  => 'nullable|string|max:500',
         ]);
 
-        $response = Notify::send(
+        $response = Notify::sms(
             $request->phone,
             $request->message ?? 'این یک پیامک آزمایشی است 🎉'
         )->via($request->driver)->send();
@@ -122,11 +122,10 @@ class OtpService
 {
     public function send(string $phone, string $code): bool
     {
-        $response = Notify::send($phone, "code: {$code}")
+        $response = Notify::flash($phone, config('otp.template_id'), [
+            'code' => $code,
+        ])
             ->via('smsir')
-            ->type('pattern', config('otp.template_id'), [
-                'code' => $code,
-            ])
             ->send();
 
         return $response->isSuccessful();

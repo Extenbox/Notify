@@ -8,7 +8,6 @@ class NotifyMessage
     protected ?string $phone       = null;
     protected ?string $provider    = null;
     protected ?string $sender      = null;
-    protected string  $type        = 'normal';
     protected ?string $patternCode = null;
     protected array   $variables   = [];
 
@@ -44,7 +43,6 @@ class NotifyMessage
 
     public function pattern(string $patternCode, array $variables = []): static
     {
-        $this->type        = 'pattern';
         $this->patternCode = $patternCode;
         $this->variables   = $variables;
         return $this;
@@ -56,7 +54,6 @@ class NotifyMessage
     public function getPhone(): ?string      { return $this->phone; }
     public function getProvider(): ?string   { return $this->provider; }
     public function getSender(): ?string     { return $this->sender; }
-    public function getType(): string        { return $this->type; }
     public function getPatternCode(): ?string{ return $this->patternCode; }
     public function getVariables(): array    { return $this->variables; }
 }

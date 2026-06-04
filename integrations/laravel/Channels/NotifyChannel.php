@@ -49,14 +49,18 @@ class NotifyChannel
             return null;
         }
 
-        $pending = Notify::send($phone, $message->getContent());
+        if ($message->getPatternCode() !== null) {
+            $pending = Notify::flash(
+                $phone,
+                $message->getPatternCode(),
+                $message->getVariables()
+            );
+        } else {
+            $pending = Notify::sms($phone, $message->getContent());
+        }
 
         if ($message->getProvider()) {
             $pending->via($message->getProvider(), $message->getSender());
-        }
-
-        if ($message->getType() === 'pattern') {
-            $pending->type('pattern', $message->getPatternCode(), $message->getVariables());
         }
 
         return $pending->send();

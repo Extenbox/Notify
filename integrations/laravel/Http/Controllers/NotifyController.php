@@ -152,7 +152,7 @@ class NotifyController extends Controller
         $phone   = $validated['phone'];
         $message = $validated['message'] ?? 'پیامک آزمایشی از Notify - ' . now()->format('H:i:s');
 
-        $pending = Notify::send($phone, $message);
+        $pending = Notify::sms($phone, $message);
 
         if (!empty($validated['driver'])) {
             $pending->via($validated['driver'], $validated['sender'] ?? null);
