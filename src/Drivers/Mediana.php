@@ -32,13 +32,13 @@ class Mediana extends BaseDriver
             return SmsResponse::failure($response['error']);
         }
 
-        if (isset($response['StatusCode']) && $response['StatusCode'] === 0) {
+        if ($this->isSuccessfulResponse($response)) {
             return SmsResponse::success($response);
         }
 
         return SmsResponse::failure(
-            $response['Message'] ?? 'خطای ناشناخته',
-            $response['StatusCode'] ?? null,
+            $this->responseMessage($response),
+            $this->responseStatusCode($response),
             $response
         );
     }
@@ -53,13 +53,13 @@ class Mediana extends BaseDriver
             return SmsResponse::failure($response['error']);
         }
 
-        if (isset($response['StatusCode']) && $response['StatusCode'] === 0) {
+        if ($this->isSuccessfulResponse($response)) {
             return SmsResponse::success($response);
         }
 
         return SmsResponse::failure(
-            $response['Message'] ?? 'خطای ناشناخته',
-            $response['StatusCode'] ?? null,
+            $this->responseMessage($response),
+            $this->responseStatusCode($response),
             $response
         );
     }
@@ -138,5 +138,29 @@ class Mediana extends BaseDriver
     public function getPatternByTitle(string $patternTitle): array
     {
         return $this->get('sms/v1/get/pattern-title/' . rawurlencode($patternTitle));
+    }
+
+    protected function isSuccessfulResponse(array $response): bool
+    {
+        return ($response['data']['succeed'] ?? null) === true
+            || ($response['meta']['code'] ?? null) === 'OK'
+            || ($response['StatusCode'] ?? null) === 0;
+    }
+
+    protected function responseMessage(array $response): string
+    {
+        return $response['meta']['errorMessage']
+            ?? $response['data']['message']
+            ?? $response['Message']
+            ?? 'خطای ناشناخته';
+    }
+
+    protected function responseStatusCode(array $response): ?int
+    {
+        $status = $response['data']['statusInt']
+            ?? $response['StatusCode']
+            ?? null;
+
+        return is_numeric($status) ? (int) $status : null;
     }
 }
