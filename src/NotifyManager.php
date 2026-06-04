@@ -11,6 +11,7 @@ use Extenbox\Notify\Drivers\Mediana;
 use Extenbox\Notify\Drivers\MeliPayamak;
 use Extenbox\Notify\Drivers\SmsIr;
 use Extenbox\Notify\Exceptions\DriverNotFoundException;
+use Extenbox\Notify\Support\Config;
 
 class NotifyManager
 {
@@ -24,7 +25,12 @@ class NotifyManager
         'ippanel'     => IpPanel::class,
     ];
 
-    public function __construct(protected array $config = []) {}
+    public function __construct(protected array $config = [])
+    {
+        if ($this->config === []) {
+            $this->config = Config::load();
+        }
+    }
 
     /**
      * شروع یک ارسال زنجیره‌ای
@@ -134,6 +140,10 @@ class NotifyManager
         $table = $this->config['table'] ?? 'Notify_providers';
 
         try {
+            if (!class_exists(DB::class)) {
+                return $this->config['drivers'][$name] ?? [];
+            }
+
             $row = DB::table($table)
                 ->where('driver', $name)
                 ->where('is_active', true)
@@ -182,13 +192,17 @@ class NotifyManager
         $table = $this->config['table'] ?? 'Notify_providers';
 
         try {
+            if (!class_exists(DB::class)) {
+                return false;
+            }
+
             DB::table($table)->updateOrInsert(
                 ['driver' => $name],
                 [
                     'config'     => json_encode($config),
                     'is_active'  => true,
-                    'updated_at' => now(),
-                    'created_at' => now(),
+                    'updated_at' => $this->now(),
+                    'created_at' => $this->now(),
                 ]
             );
 
@@ -281,6 +295,10 @@ class NotifyManager
         $table = $this->config['log']['table'] ?? 'Notify_logs';
 
         try {
+            if (!class_exists(DB::class)) {
+                return;
+            }
+
             DB::table($table)->insert([
                 'provider'   => $provider,
                 'to'         => is_array($pending->getTo())
@@ -290,11 +308,16 @@ class NotifyManager
                 'message'    => $pending->getMessage(),
                 'status'     => $response->isSuccessful() ? 'sent' : 'failed',
                 'response'   => json_encode($response->toArray()),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at' => $this->now(),
+                'updated_at' => $this->now(),
             ]);
         } catch (\Throwable) {
             // لاگ silent باشد تا ارسال مختل نشود
         }
+    }
+
+    protected function now(): string|object
+    {
+        return function_exists('now') ? now() : date('Y-m-d H:i:s');
     }
 }

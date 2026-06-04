@@ -1,5 +1,7 @@
 <?php
 
+use Extenbox\Notify\Support\Config;
+
 return [
 
     /*
@@ -9,7 +11,7 @@ return [
     | نام پنل پیامکی که به صورت پیش‌فرض استفاده می‌شود
     | مقادیر مجاز: mediana, melipayamak, ghasedak, smsir, ippanel
     */
-    'default' => env('Notify_DEFAULT_DRIVER', 'smsir'),
+    'default' => Config::env('Notify_DEFAULT_DRIVER', 'smsir'),
 
     /*
     |--------------------------------------------------------------------------
@@ -18,7 +20,7 @@ return [
     | در صورت عدم موفقیت پنل پیش‌فرض، از این پنل استفاده می‌شود
     | null برای غیرفعال کردن
     */
-    'fallback' => env('Notify_FALLBACK_DRIVER', null),
+    'fallback' => Config::env('Notify_FALLBACK_DRIVER', null),
 
     /*
     |--------------------------------------------------------------------------
@@ -27,7 +29,7 @@ return [
     | config : تنظیمات از همین فایل خوانده می‌شود
     | database : تنظیمات از دیتابیس خوانده می‌شود
     */
-    'config_source' => env('Notify_CONFIG_SOURCE', 'config'),
+    'config_source' => Config::env('Notify_CONFIG_SOURCE', 'config'),
 
     /*
     |--------------------------------------------------------------------------
@@ -36,7 +38,7 @@ return [
     | برای حفظ استفاده ساده Notify::send(...) روشن است.
     | در تست‌ها می‌توان آن را خاموش کرد تا ارسال ناخواسته انجام نشود.
     */
-    'auto_send' => env('Notify_AUTO_SEND', true),
+    'auto_send' => Config::env('Notify_AUTO_SEND', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -54,33 +56,33 @@ return [
     'drivers' => [
 
         'mediana' => [
-            'api_key'     => env('MEDIANA_API_KEY', ''),
-            'sender'      => env('MEDIANA_SENDER', ''),
+            'api_key'     => Config::env('MEDIANA_API_KEY', ''),
+            'sender'      => Config::env('MEDIANA_SENDER', ''),
             'base_url'    => 'https://rest.mediana.ir',
         ],
 
         'melipayamak' => [
-            'username'    => env('MELIPAYAMAK_USERNAME', ''),
-            'password'    => env('MELIPAYAMAK_PASSWORD', ''),
-            'sender'      => env('MELIPAYAMAK_SENDER', ''),
+            'username'    => Config::env('MELIPAYAMAK_USERNAME', ''),
+            'password'    => Config::env('MELIPAYAMAK_PASSWORD', ''),
+            'sender'      => Config::env('MELIPAYAMAK_SENDER', ''),
             'base_url'    => 'https://rest.payamak-panel.com/api/SendSMS',
         ],
 
         'ghasedak' => [
-            'api_key'     => env('GHASEDAK_API_KEY', ''),
-            'sender'      => env('GHASEDAK_SENDER', ''),
+            'api_key'     => Config::env('GHASEDAK_API_KEY', ''),
+            'sender'      => Config::env('GHASEDAK_SENDER', ''),
             'base_url'    => 'https://api.ghasedak.me/v2',
         ],
 
         'smsir' => [
-            'api_key'     => env('SMSIR_API_KEY', ''),
-            'sender'      => env('SMSIR_SENDER', ''),
+            'api_key'     => Config::env('SMSIR_API_KEY', ''),
+            'sender'      => Config::env('SMSIR_SENDER', ''),
             'base_url'    => 'https://api.sms.ir/v1',
         ],
 
         'ippanel' => [
-            'api_key'     => env('IPPANEL_API_KEY', ''),
-            'sender'      => env('IPPANEL_SENDER', ''),
+            'api_key'     => Config::env('IPPANEL_API_KEY', ''),
+            'sender'      => Config::env('IPPANEL_SENDER', ''),
             'base_url'    => 'https://edge.ippanel.com/v1public',
         ],
 
@@ -92,7 +94,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'log' => [
-        'enabled' => env('Notify_LOG', true),
+        'enabled' => Config::env('Notify_LOG', true),
         'table'   => 'Notify_logs',
     ],
 

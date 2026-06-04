@@ -3,7 +3,7 @@
 namespace Extenbox\Notify\Traits;
 
 use Extenbox\Notify\PendingSms;
-use Extenbox\Notify\Facades\Notify;
+use Extenbox\Notify\Notify;
 
 /**
  * Trait HasNotify
