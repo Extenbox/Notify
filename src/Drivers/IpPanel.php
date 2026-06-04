@@ -69,7 +69,7 @@ class IpPanel extends BaseDriver
 
     public function getCredit(): array
     {
-        return $this->get('api//payment/credit/mine');
+        return $this->get('api/payment/credit/mine');
     }
 
     public function sendOneToMany(string $originator, array $recipients, string $message, ?string $summary = null, ?string $sendTime = null): array

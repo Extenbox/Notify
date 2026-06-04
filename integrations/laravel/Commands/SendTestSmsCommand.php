@@ -24,7 +24,7 @@ class SendTestSmsCommand extends Command
 
         $this->info("📱 در حال ارسال پیامک آزمایشی به: {$phone}");
 
-        $pending = Notify::message($phone, $message);
+        $pending = Notify::sms($phone, $message);
 
         if ($driver) {
             $pending->via($driver, $sender ?: null);

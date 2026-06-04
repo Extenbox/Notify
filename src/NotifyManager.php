@@ -32,21 +32,19 @@ class NotifyManager
         }
     }
 
-    /**
-     * شروع یک ارسال زنجیره‌ای
-     *
-     * Notify::message('09...', 'پیام')
-     * Notify::message('09...', 'پیام')->via('smsir', '3000...')->send()
-     * Notify::message('09...', 'پیام')->via('smsir')->type('pattern', 'code', ['key'=>'val'])->send()
-     */
-    public function message(string|array $to, string $message): PendingSms
+    public function sms(string|array $to, string $message): PendingSms
     {
         return new PendingSms($this, $to, $message);
     }
 
-    public function sms(string|array $to, string $message): PendingSms
+    public function flash(string|array $to, string $patternCode, array $variables = []): PendingSms
     {
-        return $this->message($to, $message);
+        return new PendingSms($this, $to, '', $patternCode, $variables);
+    }
+
+    public function message(string|array $to, string $message): PendingSms
+    {
+        return $this->sms($to, $message);
     }
 
     /**
@@ -84,16 +82,12 @@ class NotifyManager
                 $driver->setSender($pending->getSender());
             }
 
-            if ($pending->getType() === 'pattern') {
-                $variables   = $pending->getVariables();
-                $patternCode = $pending->getPatternCode() ?? '';
-
-                // اگر متغیرها خالی بود اما پیام به فرمت "key: value" بود، parse کن
-                if (empty($variables)) {
-                    $variables = $this->parseMessageAsVariables($pending->getMessage());
-                }
-
-                return $driver->sendPattern($pending->getTo(), $patternCode, $variables);
+            if ($pending->getPatternCode() !== null) {
+                return $driver->sendPattern(
+                    $pending->getTo(),
+                    $pending->getPatternCode(),
+                    $pending->getVariables()
+                );
             }
 
             return $driver->sendNormal($pending->getTo(), $pending->getMessage());
@@ -287,25 +281,6 @@ class NotifyManager
         return array_keys($this->driverMap);
     }
 
-    /**
-     * تجزیه پیام ساده به متغیرها
-     * "code: 12345, name: علی" → ['code' => '12345', 'name' => 'علی']
-     */
-    protected function parseMessageAsVariables(string $message): array
-    {
-        $variables = [];
-        $parts     = explode(',', $message);
-
-        foreach ($parts as $part) {
-            if (str_contains($part, ':')) {
-                [$key, $value] = explode(':', $part, 2);
-                $variables[trim($key)] = trim($value);
-            }
-        }
-
-        return $variables ?: ['message' => $message];
-    }
-
     protected function log(PendingSms $pending, SmsResponse $response, string $provider): void
     {
         if (!($this->config['log']['enabled'] ?? true)) {
@@ -324,7 +299,7 @@ class NotifyManager
                 'to'         => is_array($pending->getTo())
                     ? implode(',', $pending->getTo())
                     : $pending->getTo(),
-                'type'       => $pending->getType(),
+                'type'       => $pending->getPatternCode() !== null ? 'flash' : 'sms',
                 'message'    => $pending->getMessage(),
                 'status'     => $response->isSuccessful() ? 'sent' : 'failed',
                 'response'   => json_encode($response->toArray()),

@@ -26,12 +26,17 @@ class Notify
 
     public static function message(string|array $to, string $message): PendingSms
     {
-        return static::manager()->message($to, $message);
+        return static::manager()->sms($to, $message);
     }
 
     public static function sms(string|array $to, string $message): PendingSms
     {
         return static::manager()->sms($to, $message);
+    }
+
+    public static function flash(string|array $to, string $patternCode, array $variables = []): PendingSms
+    {
+        return static::manager()->flash($to, $patternCode, $variables);
     }
 
     public static function driver(string $name): SmsDriver

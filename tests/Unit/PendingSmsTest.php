@@ -26,13 +26,6 @@ class PendingSmsTest extends TestCase
     }
 
     /** @test */
-    public function it_defaults_to_normal_type(): void
-    {
-        $pending = new PendingSms($this->manager, '09123456789', 'پیام');
-        $this->assertEquals('normal', $pending->getType());
-    }
-
-    /** @test */
     public function via_sets_provider_and_sender(): void
     {
         $pending = (new PendingSms($this->manager, '09123456789', 'پیام'))
@@ -40,17 +33,6 @@ class PendingSmsTest extends TestCase
 
         $this->assertEquals('smsir', $pending->getProvider());
         $this->assertEquals('30007732000000', $pending->getSender());
-    }
-
-    /** @test */
-    public function type_sets_pattern_mode(): void
-    {
-        $pending = (new PendingSms($this->manager, '09123456789', 'پیام'))
-            ->type('pattern', 'tmpl-001', ['code' => '1234']);
-
-        $this->assertEquals('pattern', $pending->getType());
-        $this->assertEquals('tmpl-001', $pending->getPatternCode());
-        $this->assertEquals(['code' => '1234'], $pending->getVariables());
     }
 
     /** @test */
@@ -76,13 +58,11 @@ class PendingSmsTest extends TestCase
     /** @test */
     public function chaining_works_correctly(): void
     {
-        $pending = (new PendingSms($this->manager, '09123456789', 'code: 1234'))
-            ->via('smsir', '30001')
-            ->type('pattern', 'verify-code', ['code' => '1234']);
+        $pending = (new PendingSms($this->manager, '09123456789', '', 'verify-code', ['code' => '1234']))
+            ->via('smsir', '30001');
 
         $this->assertEquals('smsir', $pending->getProvider());
         $this->assertEquals('30001', $pending->getSender());
-        $this->assertEquals('pattern', $pending->getType());
         $this->assertEquals('verify-code', $pending->getPatternCode());
         $this->assertEquals(['code' => '1234'], $pending->getVariables());
     }

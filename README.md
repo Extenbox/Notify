@@ -43,7 +43,7 @@ Notify::configure([
     ],
 ]);
 
-$response = Notify::message('09123456789', 'سلام')->send();
+$response = Notify::sms('09123456789', 'سلام')->send();
 
 if ($response->isSuccessful()) {
     echo $response->message;
@@ -87,7 +87,7 @@ Usage:
 
 ```php
 $response = service('sms')->notify()
-    ->message('09123456789', 'کد تایید: 1234')
+    ->sms('09123456789', 'کد تایید: 1234')
     ->send();
 ```
 
@@ -107,9 +107,9 @@ The Laravel service provider publishes migrations from `db/migrations/` into you
 ```php
 use Extenbox\Notify\Facades\Notify;
 
-Notify::message('09123456789', 'سلام! خوش آمدید.')->send();
+Notify::sms('09123456789', 'سلام! خوش آمدید.')->send();
 
-$response = Notify::message('09123456789', 'پیام')->send();
+$response = Notify::sms('09123456789', 'پیام')->send();
 ```
 
 ## Pattern SMS
@@ -117,15 +117,14 @@ $response = Notify::message('09123456789', 'پیام')->send();
 ```php
 use Extenbox\Notify\Notify;
 
-Notify::message('09123456789', 'code: 12345')
+Notify::flash('09123456789', 'verify-template', [
+    'code' => '12345',
+])
     ->via('smsir', '3000xxxx')
-    ->type('pattern', 'verify-template', [
-        'code' => '12345',
-    ])
     ->send();
 ```
 
-Use `Notify::message($to, $message)` to start a message chain, then call final `send()`.
+Use `Notify::sms($to, $message)` for normal SMS and `Notify::flash($to, $patternCode, $variables)` for pattern SMS, then call final `send()`.
 
 ## Runtime Configuration
 

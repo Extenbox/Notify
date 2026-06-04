@@ -7,10 +7,8 @@ use Extenbox\Notify\Contracts\SmsResponse;
 /**
  * PendingSms - بیلدر زنجیره‌ای برای ارسال پیامک
  *
-     * Notify::message($phone, $msg)
-     *   ->via('smsir', '3000...')
-     *   ->type('pattern', 'template_code', ['key' => 'value'])
-     *   ->send()
+ * Notify::sms($phone, $msg)->via('smsir', '3000...')->send()
+ * Notify::flash($phone, 'template_code', ['key' => 'value'])->via('smsir')->send()
  */
 class PendingSms
 {
@@ -18,16 +16,22 @@ class PendingSms
     protected string       $message;
     protected ?string      $provider    = null;
     protected ?string      $sender      = null;
-    protected string       $type        = 'normal';
     protected ?string      $patternCode = null;
     protected array        $variables   = [];
     protected NotifyManager $manager;
 
-    public function __construct(NotifyManager $manager, string|array $to, string $message)
-    {
-        $this->manager = $manager;
-        $this->to      = $to;
-        $this->message = $message;
+    public function __construct(
+        NotifyManager $manager,
+        string|array $to,
+        string $message = '',
+        ?string $patternCode = null,
+        array $variables = []
+    ) {
+        $this->manager     = $manager;
+        $this->to          = $to;
+        $this->message     = $message;
+        $this->patternCode = $patternCode;
+        $this->variables   = $variables;
     }
 
     /**
@@ -44,20 +48,6 @@ class PendingSms
     }
 
     /**
-     * تعیین نوع ارسال
-     *
-     * ->type('normal')
-     * ->type('pattern', 'template_code', ['name' => 'Ali', 'code' => '12345'])
-     */
-    public function type(string $type, ?string $patternCode = null, array $variables = []): static
-    {
-        $this->type        = $type;
-        $this->patternCode = $patternCode;
-        $this->variables   = $variables;
-        return $this;
-    }
-
-    /**
      * ارسال فوری
      * اگر auto_send روشن باشد، __destruct همین متد را برای استفاده ساده README صدا می‌زند.
      */
@@ -65,18 +55,18 @@ class PendingSms
 
     public function send(): SmsResponse
     {
-        return $this->dispatch();
-    }
-
-    public function dispatch(): SmsResponse
-    {
         $this->sent = true;
         return $this->manager->dispatch($this);
     }
 
+    public function dispatch(): SmsResponse
+    {
+        return $this->send();
+    }
+
     public function deliver(): SmsResponse
     {
-        return $this->dispatch();
+        return $this->send();
     }
 
     public function __destruct()
@@ -106,11 +96,6 @@ class PendingSms
     public function getSender(): ?string
     {
         return $this->sender;
-    }
-
-    public function getType(): string
-    {
-        return $this->type;
     }
 
     public function getPatternCode(): ?string

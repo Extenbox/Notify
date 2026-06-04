@@ -9,6 +9,7 @@ use Extenbox\Notify\PendingSms;
 /**
  * @method static PendingSms message(string|array $to, string $message)
  * @method static PendingSms sms(string|array $to, string $message)
+ * @method static PendingSms flash(string|array $to, string $patternCode, array $variables = [])
  * @method static \Extenbox\Notify\Contracts\SmsDriver driver(string $name)
  * @method static NotifyManager configureDriver(string $name, array $config)
  * @method static NotifyManager setDefault(string $name)
