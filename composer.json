@@ -26,7 +26,10 @@
     },
     "autoload": {
         "psr-4": {
-            "Extenbox\\Notify\\": "src/"
+            "Extenbox\\Notify\\": [
+                "src/",
+                "integrations/laravel/"
+            ]
         },
         "files": [
             "src/helpers.php"
