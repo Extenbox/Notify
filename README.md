@@ -12,6 +12,12 @@ composer require extenbox/notify
 
 The package core only requires PHP 8.1+ and Guzzle. Laravel components are optional and are used only inside Laravel projects.
 
+## Package Layout
+
+- `src/` contains the framework-independent SMS core.
+- `db/migrations/` contains raw migration files that each framework can copy or publish where it needs.
+- `integrations/laravel/` contains Laravel helpers such as service provider, facade, artisan commands, notification channel, Eloquent models, and controller.
+
 ## Plain PHP
 
 ```php
@@ -92,6 +98,8 @@ php artisan vendor:publish --tag=Notify-migrations
 php artisan migrate
 ```
 
+The Laravel service provider publishes migrations from `db/migrations/` into your app's `database/migrations` directory.
+
 ```php
 use Extenbox\Notify\Facades\Notify;
 
@@ -131,5 +139,5 @@ Notify::setFallback('ghasedak');
 
 - `Extenbox\Notify\Notify` is the framework-independent static gateway.
 - `Extenbox\Notify\NotifyManager` is the framework-independent manager class.
-- `Extenbox\Notify\Facades\Notify`, service provider, artisan commands, Eloquent models, and notification channel are Laravel-only adapters.
+- `integrations/laravel/` contains Laravel-only adapters while preserving their previous namespaces for compatibility.
 - In non-Laravel projects, set `'log' => ['enabled' => false]` unless you implement logging yourself.
