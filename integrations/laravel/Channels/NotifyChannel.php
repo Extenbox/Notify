@@ -49,7 +49,7 @@ class NotifyChannel
             return null;
         }
 
-        $pending = Notify::send($phone, $message->getContent());
+        $pending = Notify::message($phone, $message->getContent());
 
         if ($message->getProvider()) {
             $pending->via($message->getProvider(), $message->getSender());

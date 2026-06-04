@@ -76,9 +76,9 @@ class IpPanel extends BaseDriver
     {
         return $this->post('api/send', $this->withoutNulls([
             'sending_type' => 'webservice',
-            'from_number' => $originator,
+            'from_number' => $this->formatNumber($originator),
             'message' => $message,
-            'params' => ['recipients' => $recipients],
+            'params' => ['recipients' => $this->formatNumbers($recipients)],
             'description' => $summary,
             'send_time' => $sendTime,
         ]));
@@ -88,7 +88,7 @@ class IpPanel extends BaseDriver
     {
         return $this->post('api/send', $this->withoutNulls([
             'sending_type' => 'peer_to_peer',
-            'params' => ['items' => $items],
+            'params' => $this->formatPeerToPeerItems($items),
             'send_time' => $sendTime,
         ]));
     }
@@ -97,12 +97,10 @@ class IpPanel extends BaseDriver
     {
         return $this->post('api/send', $this->withoutNulls([
             'sending_type' => 'pattern',
-            'from_number' => $originator,
+            'from_number' => $this->formatNumber($originator),
             'code' => $patternCode,
-            'params' => [
-                'recipient' => $recipient,
-                'variable' => $values,
-            ],
+            'recipients' => [$this->formatNumber($recipient)],
+            'params' => $values,
         ]));
     }
 
@@ -154,5 +152,46 @@ class IpPanel extends BaseDriver
     {
         return ($response['meta']['status'] ?? null) === true
             || ($response['status'] ?? null) === 0;
+    }
+
+    protected function formatNumbers(array $numbers): array
+    {
+        return array_map(fn($number) => $this->formatNumber((string) $number), $numbers);
+    }
+
+    protected function formatNumber(string $number): string
+    {
+        $number = trim($number);
+
+        if (str_starts_with($number, '+')) {
+            return $number;
+        }
+
+        $digits = preg_replace('/\D/', '', $number) ?? '';
+
+        if (str_starts_with($digits, '00')) {
+            return '+' . substr($digits, 2);
+        }
+
+        if (str_starts_with($digits, '98')) {
+            return '+' . $digits;
+        }
+
+        if (str_starts_with($digits, '0')) {
+            return '+98' . substr($digits, 1);
+        }
+
+        return '+98' . $digits;
+    }
+
+    protected function formatPeerToPeerItems(array $items): array
+    {
+        return array_map(function (array $item): array {
+            if (isset($item['recipients']) && is_array($item['recipients'])) {
+                $item['recipients'] = $this->formatNumbers($item['recipients']);
+            }
+
+            return $item;
+        }, $items);
     }
 }

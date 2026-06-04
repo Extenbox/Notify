@@ -35,7 +35,7 @@ class TestSendCommand extends Command
             ]
         );
 
-        $pending = $Notify->send($phone, $message);
+        $pending = $Notify->message($phone, $message);
 
         if ($driver) {
             $pending->via($driver, $sender);

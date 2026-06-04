@@ -47,6 +47,6 @@ trait HasNotify
             );
         }
 
-        return Notify::send($phone, $message);
+        return Notify::message($phone, $message);
     }
 }

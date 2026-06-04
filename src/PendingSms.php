@@ -10,7 +10,7 @@ use Extenbox\Notify\Contracts\SmsResponse;
      * Notify::message($phone, $msg)
      *   ->via('smsir', '3000...')
      *   ->type('pattern', 'template_code', ['key' => 'value'])
-     *   ->dispatch()
+     *   ->send()
  */
 class PendingSms
 {

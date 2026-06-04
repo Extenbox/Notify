@@ -36,25 +36,15 @@ class NotifyManager
      * شروع یک ارسال زنجیره‌ای
      *
      * Notify::message('09...', 'پیام')
-     * Notify::message('09...', 'پیام')->via('smsir', '3000...')->dispatch()
-     * Notify::message('09...', 'پیام')->via('smsir')->type('pattern', 'code', ['key'=>'val'])->dispatch()
+     * Notify::message('09...', 'پیام')->via('smsir', '3000...')->send()
+     * Notify::message('09...', 'پیام')->via('smsir')->type('pattern', 'code', ['key'=>'val'])->send()
      */
     public function message(string|array $to, string $message): PendingSms
     {
         return new PendingSms($this, $to, $message);
     }
 
-    public function info(string|array $to, string $message): PendingSms
-    {
-        return $this->message($to, $message);
-    }
-
     public function sms(string|array $to, string $message): PendingSms
-    {
-        return $this->message($to, $message);
-    }
-
-    public function send(string|array $to, string $message): PendingSms
     {
         return $this->message($to, $message);
     }

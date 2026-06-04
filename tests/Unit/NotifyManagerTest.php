@@ -13,13 +13,13 @@ class NotifyManagerTest extends TestCase
 {
     public function test_send_returns_pending_sms(): void
     {
-        $pending = Notify::send('09123456789', 'پیام آزمایشی');
+        $pending = Notify::message('09123456789', 'پیام آزمایشی');
         $this->assertInstanceOf(PendingSms::class, $pending);
     }
 
     public function test_pending_sms_via_sets_provider(): void
     {
-        $pending = Notify::send('09123456789', 'پیام')
+        $pending = Notify::message('09123456789', 'پیام')
             ->via('ghasedak', '5000111122223333');
 
         $this->assertEquals('ghasedak', $pending->getProvider());
@@ -28,7 +28,7 @@ class NotifyManagerTest extends TestCase
 
     public function test_pending_sms_type_sets_pattern(): void
     {
-        $pending = Notify::send('09123456789', 'کد: 12345')
+        $pending = Notify::message('09123456789', 'کد: 12345')
             ->via('smsir')
             ->type('pattern', 'verify-code', ['code' => '12345']);
 

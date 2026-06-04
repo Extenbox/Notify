@@ -24,19 +24,9 @@ class Notify
         return static::manager($config);
     }
 
-    public static function send(string|array $to, string $message): PendingSms
-    {
-        return static::manager()->send($to, $message);
-    }
-
     public static function message(string|array $to, string $message): PendingSms
     {
         return static::manager()->message($to, $message);
-    }
-
-    public static function info(string|array $to, string $message): PendingSms
-    {
-        return static::manager()->info($to, $message);
     }
 
     public static function sms(string|array $to, string $message): PendingSms
@@ -47,11 +37,6 @@ class Notify
     public static function driver(string $name): SmsDriver
     {
         return static::manager()->driver($name);
-    }
-
-    public static function dispatch(PendingSms $pending): SmsResponse
-    {
-        return static::manager()->dispatch($pending);
     }
 
     public static function __callStatic(string $method, array $arguments): mixed
