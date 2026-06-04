@@ -16,11 +16,11 @@ if (!function_exists('Notify')) {
         try {
             $manager = function_exists('app') ? app('Notify') : NotifyGateway::manager();
         } catch (\Throwable) {
-            $manager = NotifyGateway::manager();
+        $manager = NotifyGateway::manager();
         }
 
         if ($to !== null && $message !== null) {
-            return $manager->send($to, $message);
+            return $manager->message($to, $message);
         }
 
         return $manager;

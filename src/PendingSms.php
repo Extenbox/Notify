@@ -7,9 +7,10 @@ use Extenbox\Notify\Contracts\SmsResponse;
 /**
  * PendingSms - بیلدر زنجیره‌ای برای ارسال پیامک
  *
- * Notify::send($phone, $msg)
- *   ->via('smsir', '3000...')
- *   ->type('pattern', 'template_code', ['key' => 'value'])
+     * Notify::message($phone, $msg)
+     *   ->via('smsir', '3000...')
+     *   ->type('pattern', 'template_code', ['key' => 'value'])
+     *   ->dispatch()
  */
 class PendingSms
 {
@@ -64,8 +65,18 @@ class PendingSms
 
     public function send(): SmsResponse
     {
+        return $this->dispatch();
+    }
+
+    public function dispatch(): SmsResponse
+    {
         $this->sent = true;
         return $this->manager->dispatch($this);
+    }
+
+    public function deliver(): SmsResponse
+    {
+        return $this->dispatch();
     }
 
     public function __destruct()

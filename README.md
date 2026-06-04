@@ -43,7 +43,7 @@ Notify::configure([
     ],
 ]);
 
-$response = Notify::send('09123456789', 'سلام')->send();
+$response = Notify::message('09123456789', 'سلام')->dispatch();
 
 if ($response->isSuccessful()) {
     echo $response->message;
@@ -87,8 +87,8 @@ Usage:
 
 ```php
 $response = service('sms')->notify()
-    ->send('09123456789', 'کد تایید: 1234')
-    ->send();
+    ->message('09123456789', 'کد تایید: 1234')
+    ->dispatch();
 ```
 
 ## Laravel
@@ -107,9 +107,9 @@ The Laravel service provider publishes migrations from `db/migrations/` into you
 ```php
 use Extenbox\Notify\Facades\Notify;
 
-Notify::send('09123456789', 'سلام! خوش آمدید.');
+Notify::message('09123456789', 'سلام! خوش آمدید.')->dispatch();
 
-$response = Notify::send('09123456789', 'پیام')->send();
+$response = Notify::message('09123456789', 'پیام')->dispatch();
 ```
 
 ## Pattern SMS
@@ -117,13 +117,15 @@ $response = Notify::send('09123456789', 'پیام')->send();
 ```php
 use Extenbox\Notify\Notify;
 
-Notify::send('09123456789', 'code: 12345')
+Notify::message('09123456789', 'code: 12345')
     ->via('smsir', '3000xxxx')
     ->type('pattern', 'verify-template', [
         'code' => '12345',
     ])
-    ->send();
+    ->dispatch();
 ```
+
+`send($to, $message)` and final `send()` still work for backward compatibility, but the clearer API is `message(...)->dispatch()`.
 
 ## Runtime Configuration
 
