@@ -73,6 +73,10 @@ abstract class BaseDriver implements SmsDriver
 
     protected function normalizeUri(string $uri): string
     {
+        if (str_starts_with($uri, '//') || preg_match('#^[a-z][a-z0-9+.-]*://#i', $uri)) {
+            throw new \InvalidArgumentException('Absolute URLs are not allowed.');
+        }
+
         return ltrim($uri, '/');
     }
 

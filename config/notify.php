@@ -106,10 +106,15 @@ return [
     |--------------------------------------------------------------------------
     | لاگ ارسال‌ها
     |--------------------------------------------------------------------------
+    | برای کاهش ریسک افشای داده حساس (شماره، متن پیام/OTP و پاسخ provider)
+    | به‌صورت پیش‌فرض متن پیام و پاسخ کامل ذخیره نمی‌شوند و شماره ماسک می‌شود.
     */
     'log' => [
         'enabled' => Config::env('Notify_LOG', true),
         'table'   => 'Notify_logs',
+        'store_message' => Config::env('Notify_LOG_STORE_MESSAGE', false),
+        'store_response' => Config::env('Notify_LOG_STORE_RESPONSE', false),
+        'mask_to' => Config::env('Notify_LOG_MASK_TO', true),
     ],
 
 ];

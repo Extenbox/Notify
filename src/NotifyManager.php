@@ -168,7 +168,9 @@ class NotifyManager
                 return $this->config['drivers'][$name] ?? [];
             }
 
-            return json_decode($row->config ?? '{}', true) ?? [];
+            $decoded = json_decode($row->config ?? '{}', true) ?? [];
+
+            return $this->revealDbConfig($decoded);
         } catch (\Throwable) {
             // اگر جدول موجود نبود، از config فایل استفاده می‌کند
             return $this->config['drivers'][$name] ?? [];
@@ -210,10 +212,12 @@ class NotifyManager
                 return false;
             }
 
+            $configToStore = $this->protectDbConfig($config);
+
             DB::table($table)->updateOrInsert(
                 ['driver' => $name],
                 [
-                    'config'     => json_encode($config),
+                    'config'     => json_encode($configToStore),
                     'is_active'  => true,
                     'updated_at' => $this->now(),
                     'created_at' => $this->now(),
@@ -288,27 +292,83 @@ class NotifyManager
         }
 
         $table = $this->config['log']['table'] ?? 'Notify_logs';
+        $logConfig = $this->config['log'] ?? [];
 
         try {
             if (!class_exists(DB::class)) {
                 return;
             }
 
+            $to = is_array($pending->getTo()) ? $pending->getTo() : [$pending->getTo()];
+            $maskTo = (bool) ($logConfig['mask_to'] ?? true);
+            $toValue = implode(',', array_map(
+                fn ($value) => $maskTo ? $this->maskRecipient((string) $value) : (string) $value,
+                $to
+            ));
+
+            $storeMessage = (bool) ($logConfig['store_message'] ?? false);
+            $storeResponse = (bool) ($logConfig['store_response'] ?? false);
+
+            $message = $storeMessage ? $pending->getMessage() : null;
+            $responseData = $storeResponse
+                ? $response->toArray()
+                : [
+                    'success' => $response->isSuccessful(),
+                    'message' => $response->message,
+                    'status_code' => $response->statusCode,
+                ];
+
             DB::table($table)->insert([
                 'provider'   => $provider,
-                'to'         => is_array($pending->getTo())
-                    ? implode(',', $pending->getTo())
-                    : $pending->getTo(),
+                'to'         => $toValue,
                 'type'       => $pending->getPatternCode() !== null ? 'flash' : 'sms',
-                'message'    => $pending->getMessage(),
+                'message'    => $message,
                 'status'     => $response->isSuccessful() ? 'sent' : 'failed',
-                'response'   => json_encode($response->toArray()),
+                'response'   => json_encode($responseData),
                 'created_at' => $this->now(),
                 'updated_at' => $this->now(),
             ]);
         } catch (\Throwable) {
             // لاگ silent باشد تا ارسال مختل نشود
         }
+    }
+
+    protected function maskRecipient(string $value): string
+    {
+        $digits = preg_replace('/\D/', '', $value) ?? '';
+        $length = strlen($digits);
+
+        if ($length === 0) {
+            return '***';
+        }
+
+        if ($length <= 4) {
+            return str_repeat('*', $length);
+        }
+
+        return str_repeat('*', $length - 4) . substr($digits, -4);
+    }
+
+    protected function protectDbConfig(array $config): array
+    {
+        if (class_exists(\Extenbox\Notify\Models\NotifyProvider::class)
+            && method_exists(\Extenbox\Notify\Models\NotifyProvider::class, 'protectConfig')
+            && function_exists('encrypt')) {
+            return \Extenbox\Notify\Models\NotifyProvider::protectConfig($config);
+        }
+
+        return $config;
+    }
+
+    protected function revealDbConfig(array $config): array
+    {
+        if (class_exists(\Extenbox\Notify\Models\NotifyProvider::class)
+            && method_exists(\Extenbox\Notify\Models\NotifyProvider::class, 'revealConfig')
+            && function_exists('decrypt')) {
+            return \Extenbox\Notify\Models\NotifyProvider::revealConfig($config);
+        }
+
+        return $config;
     }
 
     protected function now(): string|object

@@ -12,13 +12,16 @@ use Extenbox\Notify\Models\NotifyProvider;
 /**
  * کنترلر مدیریت پنل پیامک
  *
- * می‌توانید این کنترلر را در پروژه خود extend کنید
- * یا از متدهای آن به صورت مستقیم استفاده کنید.
+ * هشدار امنیتی: این کنترلر احراز هویت/مجوز اعمال نمی‌کند.
+ * routeها را فقط برای کاربران مجاز (ادمین) و پشت middleware مناسب
+ * (auth, can/policy, throttle و ...) ثبت کنید.
  *
  * نمونه استفاده در routes/web.php:
- *   Route::post('/admin/sms/settings', [NotifyController::class, 'updateSettings']);
- *   Route::post('/admin/sms/test',     [NotifyController::class, 'testSend']);
- *   Route::get('/admin/sms/logs',      [NotifyController::class, 'logs']);
+ *   Route::middleware(['auth', 'can:manage-sms'])->group(function () {
+ *       Route::post('/admin/sms/settings', [NotifyController::class, 'updateSettings']);
+ *       Route::post('/admin/sms/test',     [NotifyController::class, 'testSend']);
+ *       Route::get('/admin/sms/logs',      [NotifyController::class, 'logs']);
+ *   });
  */
 class NotifyController extends Controller
 {
@@ -36,12 +39,11 @@ class NotifyController extends Controller
             $provider = $providers->get($driver);
             $config   = $provider?->config ?? [];
 
-            // مخفی‌سازی api_key در خروجی
-            if (isset($config['api_key'])) {
-                $config['api_key'] = $this->maskSecret($config['api_key']);
-            }
-            if (isset($config['password'])) {
-                $config['password'] = $this->maskSecret($config['password']);
+            // مخفی‌سازی مقادیر حساس در خروجی
+            foreach (['api_key', 'password', 'username', 'secret', 'token'] as $secretKey) {
+                if (array_key_exists($secretKey, $config)) {
+                    $config[$secretKey] = $this->maskSecret((string) $config[$secretKey]);
+                }
             }
 
             return [
@@ -80,12 +82,20 @@ class NotifyController extends Controller
         $driver = $validated['driver'];
         unset($validated['driver']);
 
-        // اگر api_key ماسک‌شده بود، تغییر نده
-        if (isset($validated['api_key']) && str_contains($validated['api_key'], '***')) {
-            unset($validated['api_key']);
+        // اگر مقدار حساس ماسک‌شده/خالی بود، تغییر نده
+        foreach (['api_key', 'password', 'username', 'secret', 'token'] as $secretKey) {
+            if (!array_key_exists($secretKey, $validated)) {
+                continue;
+            }
+
+            $value = $validated[$secretKey];
+            if ($value === null || $value === '' || $this->isMaskedSecret((string) $value)) {
+                unset($validated[$secretKey]);
+            }
         }
-        if (isset($validated['password']) && str_contains($validated['password'], '***')) {
-            unset($validated['password']);
+
+        if (array_key_exists('is_active', $validated)) {
+            $validated['is_active'] = (bool) $validated['is_active'];
         }
 
         // merge با تنظیمات موجود
@@ -143,9 +153,9 @@ class NotifyController extends Controller
     public function testSend(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'phone'   => 'required|string',
+            'phone'   => 'required|string|max:32',
             'driver'  => 'nullable|in:mediana,melipayamak,ghasedak,smsir,ippanel',
-            'sender'  => 'nullable|string',
+            'sender'  => 'nullable|string|max:32',
             'message' => 'nullable|string|max:500',
         ]);
 
@@ -174,21 +184,45 @@ class NotifyController extends Controller
      */
     public function logs(Request $request): JsonResponse
     {
+        $validated = $request->validate([
+            'provider' => 'nullable|in:mediana,melipayamak,ghasedak,smsir,ippanel',
+            'status'   => 'nullable|in:sent,failed',
+            'date'     => 'nullable|date',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
         $query = NotifyLog::query()->latest();
 
-        if ($request->filled('provider')) {
-            $query->provider($request->provider);
+        if (!empty($validated['provider'])) {
+            $query->provider($validated['provider']);
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if (!empty($validated['status'])) {
+            $query->where('status', $validated['status']);
         }
 
-        if ($request->filled('date')) {
-            $query->whereDate('created_at', $request->date);
+        if (!empty($validated['date'])) {
+            $query->whereDate('created_at', $validated['date']);
         }
 
-        $logs  = $query->paginate($request->get('per_page', 20));
+        $logs = $query->paginate((int) ($validated['per_page'] ?? 20));
+        $logs->getCollection()->transform(function ($log) {
+            $log->to = $this->maskRecipientForDisplay((string) ($log->to ?? ''));
+            $log->message = !empty($log->message) ? '[redacted]' : null;
+
+            if (is_array($log->response)) {
+                $log->response = [
+                    'success' => $log->response['success'] ?? ($log->status === 'sent'),
+                    'message' => $log->response['message'] ?? null,
+                    'status_code' => $log->response['status_code'] ?? null,
+                ];
+            } else {
+                $log->response = null;
+            }
+
+            return $log;
+        });
+
         $stats = NotifyLog::stats();
 
         return response()->json([
@@ -206,7 +240,11 @@ class NotifyController extends Controller
      */
     public function clearLogs(Request $request): JsonResponse
     {
-        $days    = $request->input('days', 30);
+        $validated = $request->validate([
+            'days' => 'nullable|integer|min:1|max:3650',
+        ]);
+
+        $days = (int) ($validated['days'] ?? 30);
         $deleted = NotifyLog::where('created_at', '<', now()->subDays($days))->delete();
 
         return response()->json([
@@ -217,9 +255,41 @@ class NotifyController extends Controller
 
     private function maskSecret(string $value): string
     {
-        if (strlen($value) <= 6) {
-            return '***';
+        if ($value === '') {
+            return '';
         }
-        return substr($value, 0, 3) . str_repeat('*', strlen($value) - 6) . substr($value, -3);
+
+        return '********';
+    }
+
+    private function isMaskedSecret(string $value): bool
+    {
+        return (bool) preg_match('/^\*+$/', $value);
+    }
+
+    private function maskRecipientForDisplay(string $value): string
+    {
+        $parts = array_filter(array_map('trim', explode(',', $value)));
+
+        if ($parts === []) {
+            $parts = [$value];
+        }
+
+        $masked = array_map(function (string $part): string {
+            $digits = preg_replace('/\D/', '', $part) ?? '';
+            $length = strlen($digits);
+
+            if ($length === 0) {
+                return '***';
+            }
+
+            if ($length <= 4) {
+                return str_repeat('*', $length);
+            }
+
+            return str_repeat('*', $length - 4) . substr($digits, -4);
+        }, $parts);
+
+        return implode(',', $masked);
     }
 }
